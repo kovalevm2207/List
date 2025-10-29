@@ -1,5 +1,0 @@
-digraph MyGraph {
-    A -> B -> C;
-    B -> D;
-    C -> D;
-}

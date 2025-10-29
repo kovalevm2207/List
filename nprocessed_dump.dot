@@ -1,0 +1,35 @@
+#include "DotCmd.h"
+
+digraph DUMP
+{
+    rankdir=LR;
+    node[shape=Mrecord];
+
+    NODE(index_0, data = 0, next = 0, prev = 0)
+    index_0:n -> index_0:h;
+    index_0:p -> index_0:h;
+    NODE(index_1, data = 0, next = 2, prev = 0)
+    index_1:n -> index_2:h;
+    index_1:p -> index_0:h;
+    NODE(index_2, data = 0, next = 3, prev = 1)
+    index_2:n -> index_3:h;
+    index_2:p -> index_1:h;
+    NODE(index_3, data = 0, next = 4, prev = 2)
+    index_3:n -> index_4:h;
+    index_3:p -> index_2:h;
+    NODE(index_4, data = 0, next = 5, prev = 3)
+    index_4:n -> index_5:h;
+    index_4:p -> index_3:h;
+    NODE(index_5, data = 0, next = 6, prev = 4)
+    index_5:n -> index_6:h;
+    index_5:p -> index_4:h;
+    NODE(index_6, data = 0, next = 7, prev = 5)
+    index_6:n -> index_7:h;
+    index_6:p -> index_5:h;
+    NODE(index_7, data = 0, next = 8, prev = 6)
+    index_7:n -> index_8:h;
+    index_7:p -> index_6:h;
+    NODE(index_8, data = 0, next = 0, prev = 0)
+    index_8:n -> index_0:h;
+    index_8:p -> index_0:h;
+}

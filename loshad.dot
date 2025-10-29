@@ -1,6 +1,0 @@
-digraph G {
-	A [label="Ячейка в data"];
-	B [shape = "box", label="Ячейка в next"];
-
-	A -> B -> A -> A -> A -> A -> A -> A -> A -> A -> A -> B -> B;
-}

@@ -78,39 +78,81 @@ ListErr_t ListCtor(list_s*  list)
 {
     assert(list != NULL);
 
-    list->next = (list_t) calloc(MAX_INDEX + 1, sizeof(list_t));
+    list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));
+    assert(list->data != NULL);
+
+    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));
     assert(list->next != NULL);
+    list->prev = (long*) calloc(MAX_INDEX + 1, sizeof(long));
+    assert(list->prev != NULL);
+
     for (int i = 1; i < MAX_INDEX; i++)
     {
         list->next[i] = i + 1;
+        list->prev[i] = i - 1;
     }
     list->free = 1;
 
 
-    list->prev = (list_t) calloc(MAX_INDEX + 1, sizeof(list_t));
-    assert(list->prev != NULL);
+    return LIST_OK;
+}
 
 
-    list->header = 1;
-    list->tail = 1;
+ListErr_t ListDump_ (list_s list, const char* func, const char* file, int line)
+{
+    // сначала создадим файл с макросами для построения графов
+    CreateDotCmdFile(list);
+    // отправим его в препроцессор, чтобы подставились макросы
+    system("g++ -x c -E -P nprocessed_dump.dot -o dump.dot");
+    // отправим наш файл переделываться в граф и выведем в виде png
+    system("dot -Tpng dump.dot -o dump.png && start dump.png");
+    // Пока на этом все
+
+    return LIST_OK;
+}
+
+ListErr_t CreateDotCmdFile(list_s list)
+{
+    FILE* dump_file = fopen("nprocessed_dump.dot", "w");
+    assert(dump_file != NULL);
+
+    fprintf(dump_file, "#include \"DotCmd.h\"\n"
+                       "\n"
+                       "digraph DUMP\n"
+                       "{\n"
+                       "    rankdir=LR;\n"
+                       "    node[shape=Mrecord];\n"
+                       "\n");
+
+    for (int i = 0; i <= MAX_INDEX; i++)
+    {
+        fprintf(dump_file, "    NODE(index_%d, data = %d, next = %ld, prev = %ld)\n", i, list.data[i], list.next[i], list.prev[i]);
+        fprintf(dump_file, "    index_%d:n -> index_%ld:h;\n", i, list.next[i]);
+        fprintf(dump_file, "    index_%d:p -> index_%ld:h;\n", i, list.prev[i]);
+    }
+
+    fprintf(dump_file, "}\n");
+
+    fclose(dump_file);
+
     return LIST_OK;
 }
 
 ListErr_t ListDtor(list_s* list)
 {
-    assert(list* list != NULL);
+    if (list != NULL) return NULL_LIST;
 
     free(list->prev);
     free(list->next);
+    free(list->data);
 
-    list->header = 0;
-    list->tail = 0;
     list->free = 0;
 
     return LIST_OK;
 }
 
-ListErr_t AddElement(list_t elem, long long num, list_t* data, list_s* list)
+/*
+ListErr_t AddElement(list_t elem, long num, list_t* data, list_s* list)
 {
     data[num] = elem;
 
@@ -121,16 +163,14 @@ ListErr_t AddElement(list_t elem, long long num, list_t* data, list_s* list)
 }
 
 ListErr_t DelElement(list_t data, list_s  list);
-
-ListErr_t ListDump(list_t data, list_s  list);
-{
-
-}
+*/
 
 
+/*
 ListErr_t ListVerify(list_t data, list_s  list)
 {
     (void) data; (void) list;
 
     return LIST_OK;
 }
+*/
