@@ -1,0 +1,4 @@
+digraph G {
+	A [shape="box", label="бля"];
+	A -> B;
+}
