@@ -44,7 +44,6 @@ ListErr_t DeleteBefore(long pos, list_s* list);
 
 ListErr_t ListDump_ (list_s* indexes, const char* func, const char* file, int line);
     ListErr_t CreateDotFile(list_s* list);
-    FILE* MakeFile(list_s* list);
     void MakeNodes(list_s* list, FILE* file);           //
     void MakeArrows(list_s* list, FILE* file);
     ListErr_t WriteInHtmlFile(list_s* list, const char* func, const char* file, int line);

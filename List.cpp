@@ -245,8 +245,7 @@ ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
 
     CreateDotFile(list);
     char command[MAX_FILE_NAME];
-    sprintf(command, "dot -Tsvg svg_dot/%ddump.dot -o svg_dot/%ddump.svg",
-            list->count_img, list->count_img);
+    sprintf(command, "dot -Tsvg svg_dot/dump.dot -o svg_dot/%ddump.svg", list->count_img);
     system(command);
     WriteInHtmlFile(list, func, file, line);
     return LIST_OK;
@@ -256,7 +255,7 @@ ListErr_t CreateDotFile(list_s* list)
 {
     assert(list != NULL);
 
-    FILE* dump_file = MakeFile(list);
+    FILE* dump_file = fopen("svg_dot/dump.dot", "w");
     assert(dump_file != NULL);
 
     fprintf(dump_file, "digraph DUMP\n"
@@ -280,17 +279,6 @@ ListErr_t CreateDotFile(list_s* list)
 
     fclose(dump_file);
     return LIST_OK;
-}
-
-
-FILE* MakeFile(list_s* list)
-{
-    char name[MAX_FILE_NAME] = {};
-    assert(name != NULL);
-
-    sprintf(name, "svg_dot/%ddump.dot", list->count_img);
-
-    return fopen(name, "w");
 }
 
 
