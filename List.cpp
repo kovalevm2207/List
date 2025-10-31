@@ -210,7 +210,27 @@ ListErr_t DeleteAfter(long pos, list_s* list)
 }
 
 
+ListErr_t DeleteBefore(long pos, list_s* list)
+{
+    assert(list != 0);
+    assert(pos <= MAX_INDEX);
+    long real_pos = pos + 1;
 
+    long deleting_elem = list->prev[real_pos];
+    long prev_elem = list->prev[deleting_elem];
+
+    list->prev[real_pos] = prev_elem;
+    list->next[prev_elem] = real_pos;
+
+    list->next[deleting_elem] = list->next[0];
+    list->prev[deleting_elem] = 1;
+
+    list->next[0] = deleting_elem;
+    list->data[deleting_elem] = POISON;
+
+    ListDump(list);
+    return LIST_OK;
+}
 
 ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
 {

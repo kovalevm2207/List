@@ -35,6 +35,8 @@ ListErr_t ListCtor(list_s* indexes);
 ListErr_t InsertAfter(long pos, list_t value, list_s* list);
 ListErr_t InsertBefore(long pos, list_t value, list_s* list);
 ListErr_t DeleteAfter(long pos, list_s* list);
+ListErr_t DeleteBefore(long pos, list_s* list);
+
 
 ListErr_t ListDump_ (list_s* indexes, const char* func, const char* file, int line);
 

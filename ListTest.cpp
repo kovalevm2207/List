@@ -10,7 +10,10 @@ int main()
 
     InsertBefore(1, 5, &list);
 
-    DeleteAfter(2, &list);
+    DeleteBefore(1, &list);
+
+    DeleteAfter(0, &list);
+
 
     ListDtor(&list);
     return 0;
