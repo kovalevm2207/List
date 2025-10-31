@@ -78,35 +78,31 @@ ListErr_t ListCtor(list_s*  list)
 {
     assert(list != NULL);
 
-    list->data = (list_t*) calloc(MAX_INDEX + 2, sizeof(list_t));
+    list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));
     assert(list->data != NULL);
 
-    list->next = (long*) calloc(MAX_INDEX + 2, sizeof(long));
+    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));
     assert(list->next != NULL);
 
-    list->prev = (long*) calloc(MAX_INDEX + 2, sizeof(long));
+    list->prev = (long*) calloc(MAX_INDEX + 1, sizeof(long));
     assert(list->prev != NULL);
 
     list->dump_file = StartHTMLfile();
     assert(list->dump_file != NULL);
 
-    list->data[0] = CANARY;
-    list->data[1] = CANARY;
-    for (int i = 2; i < MAX_INDEX + 2; i++)
+    list->free = 1;
+    list->data[0] = POISON;
+    list->next[0] = 0;
+    list->prev[0] = 0;
+
+    for (int i = 1; i < MAX_INDEX + 1; i++)
     {
         list->data[i] = POISON;
         list->prev[i] = i - 1;
-    }
-
-    list->next[0] = 2; // free
-    list->next[1] = 1;
-    list->prev[1] = 1;
-
-    for (int i = 2; i < MAX_INDEX + 1; i++)
-    {
         list->next[i] = i + 1;
     }
-    list->next[MAX_INDEX + 1] = 1;
+
+    list->next[MAX_INDEX] = 0;
 
     list->count_img = 1;
 
@@ -141,18 +137,17 @@ ListErr_t InsertAfter(long pos, list_t value, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
-    long real_pos = pos + 1;
 
-    long free = list->next[0];
+    long free = list->free;
 
     list->data[free] = value;
-    list->next[0] = list->next[free];
+    list->free = list->next[free];
 
-    list->next[free] = list->next[real_pos];
-    list->prev[free] = real_pos;
+    list->next[free] = list->next[pos];
+    list->prev[free] = pos;
 
-    list->prev[list->next[real_pos]] = free;
-    list->next[real_pos] = free;
+    list->prev[list->next[pos]] = free;
+    list->next[pos] = free;
 
     ListDump(list);
     return LIST_OK;
@@ -163,18 +158,17 @@ ListErr_t InsertBefore(long pos, list_t value, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
-    long real_pos = pos + 1;
 
-    long free = list->next[0];
+    long free = list->free;
 
     list->data[free] = value;
-    list->next[0] = list->next[free];
+    list->free = list->next[free];
 
-    list->prev[free] = list->next[real_pos];
-    list->next[free] = real_pos;
+    list->prev[free] = list->next[pos];
+    list->next[free] = pos;
 
-    list->next[list->prev[real_pos]] = free;
-    list->prev[real_pos] = free;
+    list->next[list->prev[pos]] = free;
+    list->prev[pos] = free;
 
     ListDump(list);
     return LIST_OK;
@@ -185,31 +179,20 @@ ListErr_t DeleteAfter(long pos, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
-    long real_pos = pos + 1;
 
-    long deleting_elem = list->next[real_pos];
+    long deleting_elem = list->next[pos];
     long next_elem = list->next[deleting_elem];
 
-    list->next[real_pos] = next_elem;
-    list->prev[next_elem] = real_pos;
+    list->next[pos] = next_elem;
+    list->prev[next_elem] = pos;
 
-    list->next[deleting_elem] = list->next[0];
-    list->prev[deleting_elem] = 1;
+    list->next[deleting_elem] = list->free;
+    list->prev[deleting_elem] = -1;  // А как мы узнаем какой был до этого свободный?
 
-    list->next[0] = deleting_elem;
+    list->free = deleting_elem;
     list->data[deleting_elem] = POISON;
-// prev(next , pos);  DSL   Domen Spasific Language  #define -> cpas
-/*
-    long deleting = list->next[real_pos];
+// prev(next , pos);  DSL   Domen Spacific Language  #define -> caps
 
-    list->next[deleting] = list->next[0];
-    list->prev[deleting] = 1;
-    list->next[0] = deleting;
-    list->data[deleting] = POISON;
-
-    list->next[real_pos] = list->next[deleting];
-    list->prev[list->next[deleting]] = real_pos;
-*/
     ListDump(list);
     return LIST_OK;
 }
@@ -219,18 +202,17 @@ ListErr_t DeleteBefore(long pos, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
-    long real_pos = pos + 1;
 
-    long deleting_elem = list->prev[real_pos];
+    long deleting_elem = list->prev[pos];
     long prev_elem = list->prev[deleting_elem];
 
-    list->prev[real_pos] = prev_elem;
-    list->next[prev_elem] = real_pos;
+    list->prev[pos] = prev_elem;
+    list->next[prev_elem] = pos;
 
-    list->next[deleting_elem] = list->next[0];
+    list->next[deleting_elem] = list->free;
     list->prev[deleting_elem] = 1;
 
-    list->next[0] = deleting_elem;
+    list->free = deleting_elem;
     list->data[deleting_elem] = POISON;
 
     ListDump(list);
@@ -292,21 +274,21 @@ void MakeNodes(list_s* list, FILE* file)
                                "label = \"<h> index_0 |"
                                " <d> data = %d |"
                                " { <p> TAIL = %ld | <n> HEAD = %ld }\"];\n",
-                  list->data[1], list->prev[1] - 1, list->next[1] - 1);
+                  list->data[0], list->prev[0], list->next[0]);
 
     fprintf(file, "    TAIL [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
                             "width=1, height=0.5, "
                             "fillcolor = \"#f79642ff\","
                             "label = \"TAIL = %ld\"];\n",
-                  list->prev[1] - 1);
+                  list->prev[0]);
 
     fprintf(file, "    HEAD [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
                             "width=1, height=0.5, "
                             "fillcolor = \"#f79642ff\","
                             "label = \"HEAD = %ld\"];\n",
-                  list->next[1] - 1);
+                  list->next[0]);
 
-    for(long index = 2; index < MAX_INDEX + 2; index++)
+    for(long index = 1; index < MAX_INDEX + 1; index++)
     {
         const char* shape_color = (list->data[index] == POISON) ? "\"palegreen\"" : "\"#81e6ffff\"";
         fprintf(file, "    index_%ld [shape=Mrecord, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12,"
@@ -315,7 +297,7 @@ void MakeNodes(list_s* list, FILE* file)
                                      "label = \"<h> index_%ld |"
                                      " <d> data = %d |"
                                      " { <p> prev = %ld | <n> next = %ld }\"];\n",
-                      index - 1, shape_color, index - 1, list->data[index], list->prev[index] - 1, list->next[index] - 1);
+                      index, shape_color, index, list->data[index], list->prev[index], list->next[index]);
     }
 }
 
@@ -327,13 +309,13 @@ void MakeArrows(list_s* list, FILE* file)
     fprintf(file, "    HEAD -> index_%ld [color=\"#f79642ff\", "
                                         "style=\"bold,dashed\", "
                                         "arrowed=\"normal\"];",
-                  list->next[1] - 1);
+                  list->next[0]);
     fprintf(file, "    TAIL -> index_%ld [color=\"#f79642ff\", "
                                         "style=\"bold,dashed\", "
                                         "arrowed=\"normal\"];",
-                  list->prev[1] - 1);
+                  list->prev[0]);
 
-    for (int i = 2; i < MAX_INDEX + 2; i++)
+    for (int i = 1; i < MAX_INDEX + 1; i++)
     {
         const char* next_color = (list->data[i] == POISON) ? "#0f5f13ff" : "#1114ff";
         const char* prev_color = (list->data[i] == POISON) ? "#91ca8aff" : "#73ceffff";
@@ -341,14 +323,14 @@ void MakeArrows(list_s* list, FILE* file)
         fprintf(file, "    index_%d:p -> index_%ld:h [color=\"%s\", "
                                                      "style=\"bold,dashed\", "
                                                      "arrowhead=\"normal\"];\n",
-                           i - 1, list->prev[i] - 1, prev_color);
-        if (i != MAX_INDEX + 1)
+                           i, list->prev[i], prev_color);
+        if (i != MAX_INDEX)
         {
             fprintf(file, "    index_%d -> index_%d\n [weight=1000, color=\"blue\", style=\"invis\"];\n", i - 1, i);
             fprintf(file, "    index_%d:n -> index_%ld:h [color=\"%s\", "
                                                          "style=\"bold\", "
                                                          "arrowhead=\"normal\"];\n",
-                               i - 1, list->next[i] - 1, next_color);
+                               i, list->next[i], next_color);
         }
     }
 }
@@ -383,17 +365,17 @@ void PrintList(list_s* list)
     fprintf(file, "<span style=\"background-color: #f79642ff;\">"
                   "| %8d | %8d | %8ld| %8ld|\n"
                   "</span>",
-                  1, list->data[1], list->next[1], list->prev[1]);
+                  0, list->data[0], list->next[0], list->prev[0]);
 
-    for (int i = 2; i < MAX_INDEX + 2   ; i++)
+    for (int i = 1; i < MAX_INDEX + 1   ; i++)
     {
         const char* background_color = (list->data[i] == POISON) ? "palegreen" : "#81e6ffff";
-        if(i == MAX_INDEX + 1) fprintf(file, "<u>");
+        if(i == MAX_INDEX) fprintf(file, "<u>");
         fprintf(file, "<span style=\"background-color: %s;\">"
                       "| %8d | %8d | %8ld| %8ld|"
                       "</span>\n",
                       background_color, i, list->data[i], list->next[i], list->prev[i]);
-        if(i == MAX_INDEX + 1) fprintf(file, "</u>");
+        if(i == MAX_INDEX) fprintf(file, "</u>");
     }
     fprintf(file, "</pre>\n");
 }
