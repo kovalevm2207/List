@@ -5,10 +5,11 @@
 #include <stdlib.h> // for calloc  // for system()
 #include <assert.h>
 
-#include "DotCmd.h"
 
 const int MAX_INDEX = 1 << 3;
+const int CANARY = 0xACDC;
 const int POISON = 0xBADDED;
+const int MAX_FILE_NAME = 1000;
 
 typedef int list_t;
 
@@ -18,6 +19,8 @@ typedef struct
     list_t* data;
     long* next;
     long* prev;
+    FILE* dump_file;
+    int count_img;
 } list_s;
 
 typedef enum
@@ -27,11 +30,22 @@ typedef enum
 } ListErr_t;
 
 ListErr_t ListCtor(list_s* indexes);
+    FILE* StartHTMLfile(void);
 
-ListErr_t ListDump_ (list_s indexes, const char* func, const char* file, int line);
-ListErr_t CreateDotCmdFile(list_s list);
+ListErr_t InsertAfter(long pos, list_t value, list_s* list);
+
+ListErr_t ListDump_ (list_s* indexes, const char* func, const char* file, int line);
+
+    ListErr_t CreateDotFile(list_s* list);
+    FILE* MakeFile(list_s* list);
+    void MakeFreeNodes(list_s* list, FILE* file);
+    void MakeDataNodes(list_s* list, FILE* file);
+    void MakeArrows(list_s* list, FILE* file);
+    ListErr_t write_in_html_file(list_s* list, const char* func, const char* file, int line);
+    void PrintList(list_s* list);
 
 ListErr_t ListDtor (list_s* indexes);
+    int EndHTMLfile(FILE* file);
 
 #define ListDump(list) ListDump_(list, __func__, __FILE__, __LINE__);
 

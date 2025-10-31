@@ -1,0 +1,31 @@
+digraph DUMP
+{
+    rankdir=RL;
+    splines=true;
+    node[shape=Mrecord];
+    index_0 [style="filled", fillcolor="lightgreen", label = "<h> index_0 | <d> data = 44252 | { <n> next = 1 | <p> prev = 3 }"]
+    index_1 [style="filled", fillcolor="lightgreen", label = "<h> index_1 | <d> data = 10 | { <n> next = 2 | <p> prev = 0 }"]
+    index_2 [style="filled", fillcolor="lightgreen", label = "<h> index_2 | <d> data = 20 | { <n> next = 3 | <p> prev = 1 }"]
+    index_3 [style="filled", fillcolor="lightgreen", label = "<h> index_3 | <d> data = 30 | { <n> next = 0 | <p> prev = 2 }"]
+    index_4 [style="filled", fillcolor="lightcoral", label = "<h> index_4 | <d> data = 12246509 | { <n> next = 5 | <p> prev = 3 }"]
+    index_5 [style="filled", fillcolor="lightcoral", label = "<h> index_5 | <d> data = 12246509 | { <n> next = 6 | <p> prev = 4 }"]
+    index_6 [style="filled", fillcolor="lightcoral", label = "<h> index_6 | <d> data = 12246509 | { <n> next = 7 | <p> prev = 5 }"]
+    index_7 [style="filled", fillcolor="lightcoral", label = "<h> index_7 | <d> data = 12246509 | { <n> next = 8 | <p> prev = 6 }"]
+    index_8 [style="filled", fillcolor="lightcoral", label = "<h> index_8 | <d> data = 12246509 | { <n> next = 0 | <p> prev = 7 }"]
+    index_1:n -> index_2:h [color="magenta", style="bold", arrowhead="normal"];
+    index_1:p -> index_0:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_2:n -> index_3:h [color="magenta", style="bold", arrowhead="normal"];
+    index_2:p -> index_1:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_3:n -> index_0:h [color="magenta", style="bold", arrowhead="normal"];
+    index_3:p -> index_2:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_4:n -> index_5:h [color="magenta", style="bold", arrowhead="normal"];
+    index_4:p -> index_3:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_5:n -> index_6:h [color="magenta", style="bold", arrowhead="normal"];
+    index_5:p -> index_4:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_6:n -> index_7:h [color="magenta", style="bold", arrowhead="normal"];
+    index_6:p -> index_5:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_7:n -> index_8:h [color="magenta", style="bold", arrowhead="normal"];
+    index_7:p -> index_6:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+    index_8:n -> index_0:h [color="magenta", style="bold", arrowhead="normal"];
+    index_8:p -> index_7:h [color="lightgrey", style="bold,dashed", arrowhead="normal"];
+}

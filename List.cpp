@@ -78,69 +78,244 @@ ListErr_t ListCtor(list_s*  list)
 {
     assert(list != NULL);
 
-    list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));
+    list->data = (list_t*) calloc(MAX_INDEX + 2, sizeof(list_t));
     assert(list->data != NULL);
 
-    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));
+    list->next = (long*) calloc(MAX_INDEX + 2, sizeof(long));
     assert(list->next != NULL);
-    list->prev = (long*) calloc(MAX_INDEX + 1, sizeof(long));
+
+    list->prev = (long*) calloc(MAX_INDEX + 2, sizeof(long));
     assert(list->prev != NULL);
 
-    for (int i = 1; i < MAX_INDEX; i++)
+    list->dump_file = StartHTMLfile();
+    assert(list->dump_file != NULL);
+
+    list->data[0] = CANARY;
+    list->data[1] = CANARY;
+    for (int i = 2; i < MAX_INDEX + 2; i++)
     {
-        list->next[i] = i + 1;
+        list->data[i] = POISON;
         list->prev[i] = i - 1;
     }
-    list->free = 1;
 
+    list->next[0] = 2; // free
+    list->next[1] = 1;
+    list->prev[1] = 1;
 
-    return LIST_OK;
-}
+    for (int i = 2; i < MAX_INDEX + 1; i++)
+    {
+        list->next[i] = i + 1;
+    }
+    list->next[MAX_INDEX + 1] = 1;
 
+    list->count_img = 1;
 
-ListErr_t ListDump_ (list_s list, const char* func, const char* file, int line)
-{
-    // сначала создадим файл с макросами для построения графов
-    CreateDotCmdFile(list);
-    // отправим его в препроцессор, чтобы подставились макросы
-    system("g++ -x c -E -P nprocessed_dump.dot -o dump.dot");
-    // отправим наш файл переделываться в граф и выведем в виде png
-    system("dot -Tpng dump.dot -o dump.png && start dump.png");
-    // Пока на этом все
+    ListDump(list);
 
     return LIST_OK;
 }
 
-ListErr_t CreateDotCmdFile(list_s list)
+
+FILE* StartHTMLfile(void)
 {
-    FILE* dump_file = fopen("nprocessed_dump.dot", "w");
+    FILE* dump_file = fopen("dump.html", "w");
+    if(dump_file == NULL) return NULL;
+
+    fprintf(dump_file, "<!DOCTYPE html>\n"
+                       "<html>\n"
+                       "<head>\n"
+                       "    <title>List Dump</title>\n"
+                       "</head>\n"
+                       "<body>\n");
+
+    return  dump_file;
+}
+
+
+ListErr_t InsertAfter(long pos, list_t value, list_s* list)
+{
+    assert(list != 0);
+    assert(pos <= MAX_INDEX);
+    long real_pos = pos + 1;
+
+    long free = list->next[0];
+
+    list->data[free] = value;
+    list->next[0] = list->next[free];
+
+    list->next[free] = list->next[real_pos];
+    list->prev[free] = real_pos;
+
+    list->prev[list->next[real_pos]] = free;
+    list->next[real_pos] = free;
+
+    ListDump(list);
+    return LIST_OK;
+}
+
+
+ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
+{
+    assert(list != NULL);
+    assert(func != NULL);
+    assert(file != NULL);
+
+    CreateDotFile(list);
+    char command[MAX_FILE_NAME];
+    sprintf(command, "dot -Tsvg svg_dot/%ddump.dot -o svg_dot/%ddump.svg",
+            list->count_img, list->count_img);
+    system(command);
+    write_in_html_file(list, func, file, line);
+    return LIST_OK;
+}
+
+ListErr_t CreateDotFile(list_s* list)
+{
+    assert(list != NULL);
+
+    FILE* dump_file = MakeFile(list);
     assert(dump_file != NULL);
 
-    fprintf(dump_file, "#include \"DotCmd.h\"\n"
-                       "\n"
-                       "digraph DUMP\n"
+    fprintf(dump_file, "digraph DUMP\n"
                        "{\n"
-                       "    rankdir=LR;\n"
-                       "    node[shape=Mrecord];\n"
-                       "\n");
+                       "    rankdir=RL;\n"
+                       "    splines=true;\n"
+                       "    node[shape=Mrecord];\n");
 
-    for (int i = 0; i <= MAX_INDEX; i++)
-    {
-        fprintf(dump_file, "    NODE(index_%d, data = %d, next = %ld, prev = %ld)\n", i, list.data[i], list.next[i], list.prev[i]);
-        fprintf(dump_file, "    index_%d:n -> index_%ld:h;\n", i, list.next[i]);
-        fprintf(dump_file, "    index_%d:p -> index_%ld:h;\n", i, list.prev[i]);
-    }
+    MakeDataNodes(list, dump_file);
+    MakeFreeNodes(list, dump_file);
+    MakeArrows(list, dump_file);
 
-    fprintf(dump_file, "}\n");
+    fprintf(dump_file,"}\n");
 
     fclose(dump_file);
+    return LIST_OK;
+}
+
+
+FILE* MakeFile(list_s* list)
+{
+    char name[MAX_FILE_NAME] = {};
+    assert(name != NULL);
+
+    sprintf(name, "svg_dot/%ddump.dot", list->count_img);
+
+    return fopen(name, "w");
+}
+
+
+void MakeFreeNodes(list_s* list, FILE* file)
+{
+    assert(list != NULL);
+
+    long index = list->next[0];
+
+    //printf("free:\n");
+    do
+    {
+        //printf("\tindex = %ld\n", index);
+        fprintf(file, "    index_%ld [style=\"filled\", "
+                                     "fillcolor=\"lightcoral\", "
+                                     "label = \"<h> index_%ld |"
+                                     " <d> data = %d |"
+                                     " { <n> next = %ld | <p> prev = %ld }\"]\n",
+                            index - 1, index - 1, list->data[index], list->next[index] - 1, list->prev[index] - 1);
+
+        index = list->next[index];
+    } while (index != 1);
+}
+
+
+void MakeDataNodes(list_s* list, FILE* file)
+{
+    assert(list != NULL);
+
+    long index = 1;
+
+    //printf("data:\n");
+    do
+    {
+        //printf("\tindex = %ld\n", index);
+        fprintf(file, "    index_%ld [style=\"filled\", "
+                                     "fillcolor=\"lightgreen\", "
+                                     "label = \"<h> index_%ld |"
+                                     " <d> data = %d |"
+                                     " { <n> next = %ld | <p> prev = %ld }\"]\n",
+                      index - 1, index - 1, list->data[index], list->next[index] - 1, list->prev[index] - 1);
+
+        index = list->next[index];
+    } while (index != 1);
+}
+
+
+void MakeArrows(list_s* list, FILE* file)
+{
+    assert(list != NULL);
+
+    for (int i = 2; i < MAX_INDEX + 2; i++)
+    {
+        fprintf(file, "    index_%d:n -> index_%ld:h [color=\"magenta\", "
+                                                          "style=\"bold\", "
+                                                          "arrowhead=\"normal\"];\n",
+                           i - 1, list->next[i] - 1);
+
+        fprintf(file, "    index_%d:p -> index_%ld:h [color=\"lightgrey\", "
+                                                          "style=\"bold,dashed\", "
+                                                          "arrowhead=\"normal\"];\n",
+                           i - 1, list->prev[i] - 1);
+    }
+}
+
+
+ListErr_t write_in_html_file(list_s* list,  const char* func, const char* file, int line)
+{
+    assert(list != NULL);
+    assert(func != NULL);
+    assert(file != NULL);
+
+    fprintf(list->dump_file, "    <pre>ListDump from %s at %s:%d</pre>\n",
+                             func, file, line);
+    PrintList(list);
+    fprintf(list->dump_file, "    <img src=\"svg_dot/%ddump.svg\">\n",
+                             list->count_img++);
 
     return LIST_OK;
+}
+
+
+void PrintList(list_s* list)
+{
+    assert(list != NULL);
+
+    FILE* file = list->dump_file;
+    assert(file != NULL);
+
+    fprintf(file, "    <pre>data [");
+    for (int i = 0; i < MAX_INDEX + 2; i++)
+    {
+        fprintf(file, " %5d;", list->data[i]);
+    }
+    fprintf(file, "]</pre>\n"
+                  "    <pre>next [");
+    for (int i = 0; i < MAX_INDEX + 2; i++)
+    {
+        fprintf(file, " %5ld;", list->next[i]);
+    }
+    fprintf(file, "]</pre>\n"
+                  "    free---------^"
+                  "    <pre>prev [");
+    for (int i = 0; i < MAX_INDEX + 2; i++)
+    {
+        fprintf(file, " %5ld;", list->prev[i]);
+    }
+    fprintf(file, "]</pre>\n");
 }
 
 ListErr_t ListDtor(list_s* list)
 {
-    if (list != NULL) return NULL_LIST;
+    if (list == NULL) return NULL_LIST;
+
+    EndHTMLfile(list->dump_file);
 
     free(list->prev);
     free(list->next);
@@ -149,6 +324,14 @@ ListErr_t ListDtor(list_s* list)
     list->free = 0;
 
     return LIST_OK;
+}
+
+int EndHTMLfile(FILE* file)
+{
+    fprintf(file, "</body>\n"
+                  "</html>\n");
+
+    return fclose(file);
 }
 
 /*

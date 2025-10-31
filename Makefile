@@ -30,13 +30,13 @@ else
 endif
 
 all: List.o ListTest.o
-	g++ $(FLAGS) $(MODE) List.o ListTest.o -o list
+	@ g++ $(FLAGS) $(MODE) List.o ListTest.o -o list
 
 List.o: List.cpp List.h
-	g++ $(FLAGS) $(MODE) -c List.cpp -o List.o
+	@ g++ $(FLAGS) $(MODE) -c List.cpp -o List.o
 
 ListTest: ListTest.cpp List.h
-	g++ $(FLAGS) $(MODE) -c ListTest.cpp -o ListTest.o
+	@ g++ $(FLAGS) $(MODE) -c ListTest.cpp -o ListTest.o
 
 clean:
 	rm *.o
