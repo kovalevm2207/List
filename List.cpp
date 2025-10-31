@@ -154,6 +154,28 @@ ListErr_t InsertAfter(long pos, list_t value, list_s* list)
 }
 
 
+ListErr_t InsertBefore(long pos, list_t value, list_s* list)
+{
+    assert(list != 0);
+    assert(pos <= MAX_INDEX);
+    long real_pos = pos + 1;
+
+    long free = list->next[0];
+
+    list->data[free] = value;
+    list->next[0] = list->next[free];
+
+    list->prev[free] = list->next[real_pos];
+    list->next[free] = real_pos;
+
+    list->next[list->prev[real_pos]] = free;
+    list->prev[real_pos] = free;
+
+    ListDump(list);
+    return LIST_OK;
+}
+
+
 ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
 {
     assert(list != NULL);
@@ -252,13 +274,16 @@ void MakeArrows(list_s* list, FILE* file)
 {
     assert(list != NULL);
 
-    for (int i = 2; i < MAX_INDEX + 2; i++)
+    for (int i = 1; i < MAX_INDEX + 2; i++)
     {
         fprintf(file, "    index_%d:n -> index_%ld:h [color=\"magenta\", "
                                                           "style=\"bold\", "
                                                           "arrowhead=\"normal\"];\n",
                            i - 1, list->next[i] - 1);
+    }
 
+    for (int i = 2; i < MAX_INDEX + 2; i++)
+    {
         fprintf(file, "    index_%d:p -> index_%ld:h [color=\"lightgrey\", "
                                                           "style=\"bold,dashed\", "
                                                           "arrowhead=\"normal\"];\n",
@@ -273,8 +298,8 @@ ListErr_t write_in_html_file(list_s* list,  const char* func, const char* file, 
     assert(func != NULL);
     assert(file != NULL);
 
-    fprintf(list->dump_file, "    <pre>ListDump from %s at %s:%d</pre>\n",
-                             func, file, line);
+    fprintf(list->dump_file, "    <pre>ListDump(%d) from %s at %s:%d</pre>\n",
+                             list->count_img, func, file, line);
     PrintList(list);
     fprintf(list->dump_file, "    <img src=\"svg_dot/%ddump.svg\">\n",
                              list->count_img++);

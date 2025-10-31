@@ -10,11 +10,7 @@ int main()
 
     InsertAfter(1, 20, &list);
 
-    InsertAfter(2, 30, &list);
-
-    InsertAfter(1, 40, &list);
-
-    InsertAfter(2, 50, &list);
+    InsertBefore(1, 15, &list);
 
     ListDtor(&list);
     return 0;

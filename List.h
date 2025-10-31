@@ -33,6 +33,8 @@ ListErr_t ListCtor(list_s* indexes);
     FILE* StartHTMLfile(void);
 
 ListErr_t InsertAfter(long pos, list_t value, list_s* list);
+ListErr_t InsertBefore(long pos, list_t value, list_s* list);
+
 
 ListErr_t ListDump_ (list_s* indexes, const char* func, const char* file, int line);
 
