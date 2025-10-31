@@ -8,9 +8,9 @@ int main()
 
     InsertAfter(0, 10, &list);
 
-    InsertAfter(1, 20, &list);
+    InsertBefore(1, 5, &list);
 
-    InsertBefore(1, 15, &list);
+    DeleteAfter(2, &list);
 
     ListDtor(&list);
     return 0;

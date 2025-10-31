@@ -176,6 +176,42 @@ ListErr_t InsertBefore(long pos, list_t value, list_s* list)
 }
 
 
+ListErr_t DeleteAfter(long pos, list_s* list)
+{
+    assert(list != 0);
+    assert(pos <= MAX_INDEX);
+    long real_pos = pos + 1;
+
+    long deleting_elem = list->next[real_pos];
+    long next_elem = list->next[deleting_elem];
+
+    list->next[real_pos] = next_elem;
+    list->prev[next_elem] = real_pos;
+
+    list->next[deleting_elem] = list->next[0];
+    list->prev[deleting_elem] = 1;
+
+    list->next[0] = deleting_elem;
+    list->data[deleting_elem] = POISON;
+
+/*
+    long deleting = list->next[real_pos];
+
+    list->next[deleting] = list->next[0];
+    list->prev[deleting] = 1;
+    list->next[0] = deleting;
+    list->data[deleting] = POISON;
+
+    list->next[real_pos] = list->next[deleting];
+    list->prev[list->next[deleting]] = real_pos;
+*/
+    ListDump(list);
+    return LIST_OK;
+}
+
+
+
+
 ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
 {
     assert(list != NULL);
