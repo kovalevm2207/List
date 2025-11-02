@@ -90,6 +90,8 @@ ListErr_t ListCtor(list_s*  list)
     list->dump_file = StartHTMLfile();
     assert(list->dump_file != NULL);
 
+    list->dump_data = POISON;
+    list->dump_pos = -1;
     list->free = 1;
     list->data[0] = POISON;
     list->next[0] = 0;
@@ -138,6 +140,9 @@ ListErr_t InsertAfter(long pos, list_t value, list_s* list)
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
+    list->dump_data = value;
+    list->dump_pos = pos;
+
     long free = list->free;
 
     list->data[free] = value;
@@ -150,6 +155,10 @@ ListErr_t InsertAfter(long pos, list_t value, list_s* list)
     list->next[pos] = free;
 
     ListDump(list);
+
+    list->dump_data = POISON;
+    list->dump_pos = -1;
+
     return LIST_OK;
 }
 
@@ -158,6 +167,9 @@ ListErr_t InsertBefore(long pos, list_t value, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
+
+    list->dump_data = value;
+    list->dump_pos = pos;
 
     long free = list->free;
 
@@ -171,6 +183,10 @@ ListErr_t InsertBefore(long pos, list_t value, list_s* list)
     list->prev[pos] = free;
 
     ListDump(list);
+
+    list->dump_data = POISON;
+    list->dump_pos = -1;
+
     return LIST_OK;
 }
 
@@ -180,18 +196,25 @@ ListErr_t DeleteAfter(long pos, list_s* list)
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
+    list->dump_pos = pos;
+
     long deleting_elem = list->next[pos];
     long next_elem = list->next[deleting_elem];
+    long last_free = list->prev[list->free];
+
+    list->prev[list->free] = deleting_elem;
 
     list->next[pos] = next_elem;
     list->prev[next_elem] = pos;
 
     list->next[deleting_elem] = list->free;
-    list->prev[deleting_elem] = -1;  // А как мы узнаем какой был до этого свободный?
+    list->prev[deleting_elem] = last_free;
 
     list->free = deleting_elem;
     list->data[deleting_elem] = POISON;
-// prev(next , pos);  DSL   Domen Spacific Language  #define -> caps
+// prev(next , pos);  DSL   Domen Specific Language  #define -> caps
+
+    list->dump_pos = -1;
 
     ListDump(list);
     return LIST_OK;
@@ -203,19 +226,29 @@ ListErr_t DeleteBefore(long pos, list_s* list)
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
+
+    list->dump_pos = pos;
+
     long deleting_elem = list->prev[pos];
     long prev_elem = list->prev[deleting_elem];
+    long last_free = list->prev[list->free];
+
+    list->prev[list->free] = deleting_elem;
 
     list->prev[pos] = prev_elem;
     list->next[prev_elem] = pos;
 
     list->next[deleting_elem] = list->free;
-    list->prev[deleting_elem] = 1;
+    list->prev[deleting_elem] = last_free;
 
     list->free = deleting_elem;
     list->data[deleting_elem] = POISON;
 
     ListDump(list);
+
+
+    list->dump_pos = -1;
+
     return LIST_OK;
 }
 
@@ -245,16 +278,16 @@ ListErr_t CreateDotFile(list_s* list)
                        "    rankdir=LR;\n"
                        "    splines=true;\n"
                        "    node[shape=hexagon,"
-                                 "style=\"filled\","
-                                 "fillcolor=\"red\","
-                                 "fontcolor=\"white\","
-                                 "fontname=\"Arial\","
-                                 "fontsize=24,"
-                                 "width=1.2,"
-                                 "height=1.8];\n"
-                       "    {rank=min; index_0;}\n");
+                                "style=\"filled\","
+                                "fillcolor=\"red\","
+                                "fontcolor=\"white\","
+                                "fontname=\"Arial\","
+                                "fontsize=24,"
+                                "width=1.2,"
+                                "height=1.8];\n");
 
     MakeNodes(list, dump_file);
+    SetOrder(list, dump_file);
     MakeArrows(list, dump_file);
 
     fprintf(dump_file,"}\n");
@@ -276,6 +309,11 @@ void MakeNodes(list_s* list, FILE* file)
                                " { <p> TAIL = %ld | <n> HEAD = %ld }\"];\n",
                   list->data[0], list->prev[0], list->next[0]);
 
+    fprintf(file, "    FREE [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
+                            "width=1, height=0.5, "
+                            "fillcolor = \"#f79642ff\","
+                            "label = \"FREE = %ld\"];\n",
+                  list->free);
     fprintf(file, "    TAIL [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
                             "width=1, height=0.5, "
                             "fillcolor = \"#f79642ff\","
@@ -302,10 +340,35 @@ void MakeNodes(list_s* list, FILE* file)
 }
 
 
+void SetOrder(list_s* list, FILE* file)
+{
+    fprintf(file, "  index_0");
+    for (int i = 1; i < MAX_INDEX + 1; i++)
+    {
+        if (list->data[i] != POISON)
+        {
+            fprintf(file, " -> index_%d", i);
+        }
+    }
+
+    for (int i = 1; i < MAX_INDEX + 1; i++)
+    {
+        if (list->data[i] == POISON)
+        {
+            fprintf(file, " -> index_%d", i);
+        }
+    }
+    fprintf(file, "[weight=1000, color=\"red\", style=\"invis\"];\n");
+}
+
 void MakeArrows(list_s* list, FILE* file)
 {
     assert(list != NULL);
 
+    fprintf(file, "    FREE -> index_%ld [color=\"#f79642ff\", "
+                                        "style=\"bold,dashed\", "
+                                        "arrowed=\"normal\"];",
+                  list->free);
     fprintf(file, "    HEAD -> index_%ld [color=\"#f79642ff\", "
                                         "style=\"bold,dashed\", "
                                         "arrowed=\"normal\"];",
@@ -326,7 +389,6 @@ void MakeArrows(list_s* list, FILE* file)
                            i, list->prev[i], prev_color);
         if (i != MAX_INDEX)
         {
-            fprintf(file, "    index_%d -> index_%d\n [weight=1000, color=\"blue\", style=\"invis\"];\n", i - 1, i);
             fprintf(file, "    index_%d:n -> index_%ld:h [color=\"%s\", "
                                                          "style=\"bold\", "
                                                          "arrowhead=\"normal\"];\n",
@@ -342,8 +404,8 @@ ListErr_t WriteInHtmlFile(list_s* list,  const char* func, const char* file, int
     assert(func != NULL);
     assert(file != NULL);
 
-    fprintf(list->dump_file, "    <pre><b>ListDump(%d) from %s at %s:%d</b></pre>\n",
-                             list->count_img, func, file, line);
+    fprintf(list->dump_file, "    <pre><b>ListDump(%d) from %s(value = %d, pos = %d) at %s:%d</b></pre>\n",
+                             list->count_img, func, list->dump_data, list->dump_pos, file, line);
     PrintList(list);
     fprintf(list->dump_file, "    <img src=\"svg_dot/%ddump.svg\">\n",
                              list->count_img++);
@@ -391,6 +453,8 @@ ListErr_t ListDtor(list_s* list)
     free(list->data);
 
     list->free = 0;
+    list->dump_data = 0;
+    list->dump_pos = 0;
 
     return LIST_OK;
 }

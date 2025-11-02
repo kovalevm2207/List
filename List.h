@@ -25,6 +25,8 @@ typedef struct
     long* prev;
     FILE* dump_file;
     int count_img;
+    list_t dump_data;
+    long dump_pos;
 } list_s;
 
 typedef enum
@@ -45,6 +47,7 @@ ListErr_t DeleteBefore(long pos, list_s* list);
 ListErr_t ListDump_ (list_s* indexes, const char* func, const char* file, int line);
     ListErr_t CreateDotFile(list_s* list);
     void MakeNodes(list_s* list, FILE* file);           //
+    void SetOrder(list_s* list, FILE* file);
     void MakeArrows(list_s* list, FILE* file);
     ListErr_t WriteInHtmlFile(list_s* list, const char* func, const char* file, int line);
     void PrintList(list_s* list);

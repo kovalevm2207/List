@@ -35,7 +35,7 @@ all: List.o ListTest.o
 List.o: List.cpp List.h
 	@ g++ $(FLAGS) $(MODE) -c List.cpp -o List.o
 
-ListTest: ListTest.cpp List.h
+ListTest.o: ListTest.cpp List.h
 	@ g++ $(FLAGS) $(MODE) -c ListTest.cpp -o ListTest.o
 
 clean:
