@@ -78,35 +78,35 @@ ListErr_t ListCtor(list_s*  list)
 {
     assert(list != NULL);
 
-    list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));
-    assert(list->data != NULL);
-
-    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));
-    assert(list->next != NULL);
+    list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));   // Вот проблема такая: list->data это указатель
+    assert(list->data != NULL);                                     // а list->data[0] это уже конкретное значение
+                                                                    // я вот не понимаю, как мне сделать макрос , ну или его обработку
+    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));          // так что бы можно было и то и то подставлять или же мне лучше просто писать
+    assert(list->next != NULL);                                           // list->data ???
 
     list->prev = (long*) calloc(MAX_INDEX + 1, sizeof(long));
     assert(list->prev != NULL);
 
-    list->dump_file = StartHTMLfile();
-    assert(list->dump_file != NULL);
+    DUMP_FILE = StartHTMLfile();
+    assert(DUMP_FILE != NULL);
 
-    list->dump_data = POISON;
-    list->dump_pos = -1;
-    list->free = 1;
-    list->data[0] = POISON;
-    list->next[0] = 0;
-    list->prev[0] = 0;
+    DUMP_DATA = POISON;
+    DUMP_POS = -1;
+    FREE = 1;
+    DATA(0) = POISON;
+    NEXT(0) = 0;
+    PREV(0) = 0;
 
     for (int i = 1; i < MAX_INDEX + 1; i++)
     {
-        list->data[i] = POISON;
-        list->prev[i] = i - 1;
-        list->next[i] = i + 1;
+        DATA(i) = POISON;
+        PREV(i) = i - 1;
+        NEXT(i) = i + 1;
     }
 
-    list->next[MAX_INDEX] = 0;
+    NEXT(MAX_INDEX) = 0;
 
-    list->count_img = 1;
+    COUNT_IMG = 1;
 
     ListDump(list);
 
@@ -119,24 +119,24 @@ ListErr_t InsertAfter(long pos, list_t value, list_s* list)
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
-    list->dump_data = value;
-    list->dump_pos = pos;
+    DUMP_DATA = value;
+    DUMP_POS = pos;
 
-    long free = list->free;
+    long free = FREE;
 
-    list->data[free] = value;
-    list->free = list->next[free];
+    DATA(free) = value;
+    FREE = NEXT(free);
 
-    list->next[free] = list->next[pos];
-    list->prev[free] = pos;
+    NEXT(free) = NEXT(pos);
+    PREV(free) = pos;
 
-    list->prev[list->next[pos]] = free;
-    list->next[pos] = free;
+    PREV(NEXT(pos)) = free;
+    NEXT(pos) = free;
 
     ListDump(list);
 
-    list->dump_data = POISON;
-    list->dump_pos = -1;
+    DUMP_DATA = POISON;
+    DUMP_POS = -1;
 
     return LIST_OK;
 }
@@ -147,24 +147,24 @@ ListErr_t InsertBefore(long pos, list_t value, list_s* list)
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
-    list->dump_data = value;
-    list->dump_pos = pos;
+    DUMP_DATA = value;
+    DUMP_POS = pos;
 
-    long free = list->free;
+    long free = FREE;
 
-    list->data[free] = value;
-    list->free = list->next[free];
+    DATA(free) = value;
+    FREE = NEXT(free);
 
-    list->prev[free] = list->next[pos];
-    list->next[free] = pos;
+    PREV(free) = NEXT(pos);
+    NEXT(free) = pos;
 
-    list->next[list->prev[pos]] = free;
-    list->prev[pos] = free;
+    NEXT(PREV(pos)) = free;
+    PREV(pos) = free;
 
     ListDump(list);
 
-    list->dump_data = POISON;
-    list->dump_pos = -1;
+    DUMP_DATA = POISON;
+    DUMP_POS = -1;
 
     return LIST_OK;
 }
@@ -175,27 +175,27 @@ ListErr_t DeleteAfter(long pos, list_s* list)
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
-    list->dump_pos = pos;
+    DUMP_POS = pos;
 
-    long deleting_elem = list->next[pos];
-    long next_elem = list->next[deleting_elem];
-    long last_free = list->prev[list->free];
+    long deleting_elem = NEXT(pos);
+    long next_elem = NEXT(deleting_elem);
+    long last_free = PREV(FREE);
 
-    list->prev[list->free] = deleting_elem;
+    PREV(FREE) = deleting_elem;
 
-    list->next[pos] = next_elem;
-    list->prev[next_elem] = pos;
+    NEXT(pos) = next_elem;
+    PREV(next_elem) = pos;
 
-    list->next[deleting_elem] = list->free;
-    list->prev[deleting_elem] = last_free;
+    NEXT(deleting_elem) = FREE;
+    PREV(deleting_elem) = last_free;
 
-    list->free = deleting_elem;
-    list->data[deleting_elem] = POISON;
+    FREE = deleting_elem;
+    DATA(deleting_elem) = POISON;
 // prev(next , pos);  DSL   Domen Specific Language  #define -> caps
 
     ListDump(list);
 
-    list->dump_pos = -1;
+    DUMP_POS = -1;
     return LIST_OK;
 }
 
@@ -206,27 +206,27 @@ ListErr_t DeleteBefore(long pos, list_s* list)
     assert(pos <= MAX_INDEX);
 
 
-    list->dump_pos = pos;
+    DUMP_POS = pos;
 
-    long deleting_elem = list->prev[pos];
-    long prev_elem = list->prev[deleting_elem];
-    long last_free = list->prev[list->free];
+    long deleting_elem = PREV(pos);
+    long prev_elem = PREV(deleting_elem);
+    long last_free = PREV(FREE);
 
-    list->prev[list->free] = deleting_elem;
+    PREV(FREE) = deleting_elem;
 
-    list->prev[pos] = prev_elem;
-    list->next[prev_elem] = pos;
+    PREV(pos) = prev_elem;
+    NEXT(prev_elem) = pos;
 
-    list->next[deleting_elem] = list->free;
-    list->prev[deleting_elem] = last_free;
+    NEXT(deleting_elem) = FREE;
+    PREV(deleting_elem) = last_free;
 
-    list->free = deleting_elem;
-    list->data[deleting_elem] = POISON;
+    FREE = deleting_elem;
+    DATA(deleting_elem) = POISON;
 
     ListDump(list);
 
 
-    list->dump_pos = -1;
+    DUMP_POS = -1;
 
     return LIST_OK;
 }
@@ -239,7 +239,7 @@ ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
 
     CreateDotFile(list);
     char command[MAX_FILE_NAME];
-    sprintf(command, "dot -Tsvg svg_dot/dump.dot -o svg_dot/%ddump.svg", list->count_img);
+    sprintf(command, "dot -Tsvg svg_dot/dump.dot -o svg_dot/%ddump.svg", COUNT_IMG);
     system(command);
     WriteInHtmlFile(list, func, file, line);
     return LIST_OK;
@@ -250,15 +250,15 @@ ListErr_t ListDtor(list_s* list)
 {
     if (list == NULL) return NULL_LIST;
 
-    EndHTMLfile(list->dump_file);
+    EndHTMLfile(DUMP_FILE);
 
     free(list->prev);
     free(list->next);
     free(list->data);
 
-    list->free = 0;
-    list->dump_data = 0;
-    list->dump_pos = 0;
+    FREE = 0;
+    DUMP_DATA = 0;
+    DUMP_POS = 0;
 
     return LIST_OK;
 }

@@ -10,6 +10,7 @@
 // ON_DEBUG(ListVerify())
 
 
+
 const int MAX_INDEX = 1 << 4;
 const int CANARY = 0xACDC;
 const int POISON = 0xC0CE;
@@ -36,3 +37,12 @@ typedef enum
 } ListErr_t;
 
 #endif // LIST_BASE
+
+#define DATA(index) list->data[index]
+#define NEXT(index) list->next[index]
+#define PREV(index) list->prev[index]
+#define FREE list->free
+#define DUMP_FILE list->dump_file
+#define COUNT_IMG list->count_img
+#define DUMP_DATA list->dump_data
+#define DUMP_POS list->dump_pos
