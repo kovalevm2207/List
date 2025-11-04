@@ -16,11 +16,13 @@ int main()
     InsertAfter(7, 800, &list);
     InsertAfter(8, 900, &list);
     InsertAfter(9, 1000, &list);
-    DeleteAfter(8, &list);
-    InsertBefore(10, 900, &list);
+    DeleteAfter(7, &list);
+    DeleteBefore(9, &list);
+    DeleteBefore(1, &list);
+
+
     list.next[6 + 1] = 300 + 1;
     list.prev[7 + 1] = 5  + 1;
-
     ListDump(&list);
 
     ListDtor(&list);

@@ -29,14 +29,17 @@ else
 	FLAGS = $(DED_FLAGS_LINUX)
 endif
 
-all: List.o ListTest.o
-	@ g++ $(FLAGS) $(MODE) List.o ListTest.o -o list
+all: List.o ListTest.o ListDump.o
+	@ g++ $(FLAGS) $(MODE) List.o ListDump.o ListTest.o -o list
 
-List.o: List.cpp List.h
+List.o: List.cpp ListDump.h List.h ListBase.h
 	@ g++ $(FLAGS) $(MODE) -c List.cpp -o List.o
 
 ListTest.o: ListTest.cpp List.h
 	@ g++ $(FLAGS) $(MODE) -c ListTest.cpp -o ListTest.o
+
+ListDump.o: ListDump.cpp ListDump.h ListBase.h
+	@ g++ $(FLAGS) $(MODE) -c ListDump.cpp -o ListDump.o
 
 clean:
 	rm *.o
