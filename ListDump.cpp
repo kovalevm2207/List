@@ -39,7 +39,11 @@ ListErr_t CreateDotFile(list_s* list)
                                 "fontname=\"Arial\","
                                 "fontsize=24,"
                                 "width=1.2,"
-                                "height=1.8];\n");
+                                "height=1.8];\n"
+                       "    edge [style=\"bold\", "
+                                 "arrowhead=\"normal\", "
+                                 "splines=line, "
+                                 "dir=normal]\n");
 
     MakeNodes(list, dump_file);
     SetOrder(list, dump_file);
@@ -64,22 +68,25 @@ void MakeNodes(list_s* list, FILE* file)
                                " { <p> TAIL = %ld | <n> HEAD = %ld }\"];\n",
                   DATA(0), PREV(0), NEXT(0));
 
-    fprintf(file, "    FREE [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
-                            "width=1, height=0.5, "
-                            "fillcolor = \"#f79642ff\","
-                            "label = \"FREE = %ld\"];\n",
-                  FREE);
-    fprintf(file, "    TAIL [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
-                            "width=1, height=0.5, "
-                            "fillcolor = \"#f79642ff\","
-                            "label = \"TAIL = %ld\"];\n",
-                  PREV(0));
+    struct BaseArrow
+    {
+        const char* name;
+        long value;
+    } Arrows[] =
+    {
+        {"FREE", FREE},
+        {"HEAD", NEXT(0)},
+        {"TAIL", PREV(0)}
+    };
 
-    fprintf(file, "    HEAD [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
-                            "width=1, height=0.5, "
-                            "fillcolor = \"#f79642ff\","
-                            "label = \"HEAD = %ld\"];\n",
-                  NEXT(0));
+    for (size_t i = 0; i < sizeof(Arrows)/sizeof(BaseArrow); i++)
+    {
+        fprintf(file, "    %s [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
+                                "width=1, height=0.5, "
+                                "fillcolor = \"#f79642ff\","
+                                "label = \"FREE = %ld\"];\n",
+                    Arrows[i].name, Arrows[i].value);
+    }
 
     for(long index = 1; index < MAX_INDEX + 1; index++)
     {
@@ -116,39 +123,42 @@ void SetOrder(list_s* list, FILE* file)
     fprintf(file, "[weight=1000, color=\"red\", style=\"invis\"];\n");
 }
 
+
+#define MAKE_BASE_ARROW()
+
+
 void MakeArrows(list_s* list, FILE* file)
 {
     assert(list != NULL);
 
-    fprintf(file, "    FREE -> index_%ld [color=\"#f79642ff\", "
-                                        "style=\"bold,dashed\", "
-                                        "arrowed=\"normal\"];",
-                  FREE);
-    fprintf(file, "    HEAD -> index_%ld [color=\"#f79642ff\", "
-                                        "style=\"bold,dashed\", "
-                                        "arrowed=\"normal\"];",
-                  NEXT(0));
-    fprintf(file, "    TAIL -> index_%ld [color=\"#f79642ff\", "
-                                        "style=\"bold,dashed\", "
-                                        "arrowed=\"normal\"];",
-                  PREV(0));
+    struct BaseArrow
+    {
+        const char* name;
+        long to;
+    } Arrows[] =
+    {
+        {"FREE", FREE},
+        {"HEAD", NEXT(0)},
+        {"TAIL", PREV(0)}
+    };
 
-    for (int i = 1; i < MAX_INDEX + 1; i++)
+    for (size_t i = 0; i < sizeof(Arrows)/sizeof(BaseArrow); i++)
+    {
+        fprintf(file, "    %s -> index_%ld [color=\"#f79642ff\", "
+                                            "style=\"bold,dashed\", "
+                                            "arrowhead=\"normal\"];",
+                      Arrows[i].name, Arrows[i].to);
+    }
+
+    for (long i = 1; i < MAX_INDEX + 1; i++)
     {
         const char* next_color = (DATA(i) == POISON) ? "#0f5f13ff" : "#1114ff";
-        const char* prev_color = (DATA(i) == POISON) ? "#91ca8aff" : "#73ceffff";
+        const char* prev_color = (DATA(i) == POISON) ? "#87c58aff" : "#7bcfffff";
 
-        fprintf(file, "    index_%d:p -> index_%ld:h [color=\"%s\", "
-                                                     "style=\"bold,dashed\", "
-                                                     "arrowhead=\"normal\"];\n",
+            fprintf(file, "    index_%ld:h -> index_%ld:h [dir=normal, color=\"%s\"];\n"
+                          "    index_%ld:p -> index_%ld:n [dir=normal, color=\"%s\"];\n",
+                           i, NEXT(i), next_color,
                            i, PREV(i), prev_color);
-        if (i != MAX_INDEX)
-        {
-            fprintf(file, "    index_%d:n -> index_%ld:h [color=\"%s\", "
-                                                         "style=\"bold\", "
-                                                         "arrowhead=\"normal\"];\n",
-                               i, NEXT(i), next_color);
-        }
     }
 }
 
