@@ -169,8 +169,9 @@ ListErr_t WriteInHtmlFile(list_s* list,  const char* func, const char* file, int
     assert(func != NULL);
     assert(file != NULL);
 
-    fprintf(DUMP_FILE, "    <pre><b>ListDump(%d) from %s(value = %d, pos = %ld) at %s:%d</b></pre>\n",
-                             COUNT_IMG, func, DUMP_DATA, DUMP_POS, file, line);
+    fprintf(DUMP_FILE, "    <pre><b>ListDump(%d) from %s(pos = %ld, value = %d) at %s:%d</b></pre>\n"
+                       "    <pre><b>function return value: %ld",
+                             COUNT_IMG, func, DUMP_POS, DUMP_DATA, file, line, DUMP_ELEM);
     PrintList(list);
     fprintf(DUMP_FILE, "    <img src=\"svg_dot/%ddump.svg\">\n",
                              COUNT_IMG++);
@@ -186,8 +187,8 @@ void PrintList(list_s* list)
     FILE* file = DUMP_FILE;
     assert(file != NULL);
 
-    fprintf(file, "    <pre>__________________________________________\n"
-                       "<u>|   index  |   data   |   next  |   prev  |</u>\n");
+    fprintf(file, "    <pre>___________________________________________\n"
+                        "<u>|   index  |   data   |   next  |   prev  |</u>\n");
 
     fprintf(file, "<span style=\"background-color: #f79642ff;\">"
                   "| %8d | %8d | %8ld| %8ld|\n"

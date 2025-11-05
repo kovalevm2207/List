@@ -1,83 +1,10 @@
-  /*В массиве next в каждой ячейке находятся номер ячейки элемента идущего за ним,
-а то что не занято заполняется номерами ячеек следующих свободных элементов.
-Изначально (при создании) в массиве next идут числа 0*, 2, 3, 4, 5, ... , MAX_INDEX, 0; (* - заполнено)
-
-    В переменной free находится тот номер ячейки массива data в которую мы в следующий
-будем что-то класть.
-Изначально (при создании) free = 1; (т.е. первая ячейка data в которую мы будем писать будет
-иметь номер 1)
-
-    В массиве prev в каждой ячейке лежит номер ячейки предыдущего элемента,
-а то ,что не занято заполняется номерами предыдущих свободных элементов;
-Изначально (при создании) в массиве prev идут числа 0*, 0*, 1, 2, 3, ... , MAX_INDEX - 1, MAX_INDEX; (* - заполнено)
-
-    В переменной header находится номер самой первой заполненной ячейки;
-Т.е. изначально header = 1;
-    Также есть переменная tail в котрой находится номер ячейки последнего элемента, которого мы записали
-Т.е. изначально tail = 1;
-
-Наша программа должна выглядеть примерно так:
-
-    Вы создаете массив list_t data (Заполненный нулями или иным POISON значением)
-(изначально data заполнена числами 0, 0, 0, 0, 0, ...)и структуру list_s list;
-отправляете структуру в ListCtor; Там эта структура принимает изначальные значения описанные выше;
-
-    Теперь вы хотите добавить в список (т.е. в массив data) элемент (очевидно на первое место), например значение 10;
-Пишете AddElement(значение(в примере это 10), номер места, рабочие поля...);
-
-    После этой операции у вас должны быть следующие значения:
-
-    в воображаемом списке у вас 10 0 0 0 0 0 0 0 0 0 0 ...
-
-    Но в реале:
-
-    data: 0 3 0 0 0 0 0 0 0 0 ...
-    next: 0 0 2 4 5 6 7 8 9 10 ...
-    prev: 0 0 1 2 3 4 5 6 7 8 ...
-    free: 2
-    tail: 1
-    header: 1
-
-    Теперь допустим значение 20 мы кладем на место 2:
-
-    в воображаемом списке у вас 10 20 0 0 0 0 0 0 0 0 0 ...
-
-    Но в реале:
-
-    data: 0 10 20 0 0 0 0 0 0  0 ...
-    next: 0  2  0 4 5 6 7 8 9 10 ...
-    prev: 0  0  1 2 3 4 5 6 7  8 ...
-    free: 3
-    tail: 2
-    header: 1
-
-    И наконец значение 30 мы кладем на место 3:
-
-    в воображаемом списке у вас 10 20 30 0 0 0 0 0 0 0 0 ...
-
-    Но в реале:
-
-    data: 0 10 20 30     0 0 0 0 0  0 ...
-    next: 0  2  3  0     5 6 7 8 9 10 ...
-    prev: 0  0  1  2     3 4 5 6 7  8 ...
-    free: 4
-    tail: 3
-    header: 1
-
-    Как это работает?
-    1) Сначала мы должны положить в массив data на следующее свободное место значение, т.е.:
-        data[free] = значение;
-
-    2) Теперь нам надо в free положить номер следующего свободного элемента, который мы можем найти из
-*/
-
 #include "ListDump.h"
 #include "List.h"
 
 ListErr_t ListCtor(list_s*  list)
 {
     assert(list != NULL);
-
+                                                                    // (ну вообще может это и не проблема)
     list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));   // Вот проблема такая: list->data это указатель
     assert(list->data != NULL);                                     // а list->data[0] это уже конкретное значение
                                                                     // я вот не понимаю, как мне сделать макрос , ну или его обработку
@@ -92,6 +19,8 @@ ListErr_t ListCtor(list_s*  list)
 
     DUMP_DATA = POISON;
     DUMP_POS = -1;
+    DUMP_ELEM = -1;
+
     FREE = 1;
     DATA(0) = POISON;
     NEXT(0) = 0;
@@ -114,7 +43,7 @@ ListErr_t ListCtor(list_s*  list)
 }
 
 
-ListErr_t InsertAfter(long pos, list_t value, list_s* list)
+long InsertAfter(long pos, list_t value, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
@@ -122,27 +51,27 @@ ListErr_t InsertAfter(long pos, list_t value, list_s* list)
     DUMP_DATA = value;
     DUMP_POS = pos;
 
-    long free = FREE;
+    DUMP_ELEM = FREE;
 
-    DATA(free) = value;
-    FREE = NEXT(free);
+    DATA(DUMP_ELEM) = value;
+    FREE = NEXT(DUMP_ELEM);
 
-    NEXT(free) = NEXT(pos);
-    PREV(free) = pos;
+    NEXT(DUMP_ELEM) = NEXT(pos);
+    PREV(DUMP_ELEM) = pos;
 
-    PREV(NEXT(pos)) = free;
-    NEXT(pos) = free;
+    PREV(NEXT(pos)) = DUMP_ELEM;
+    NEXT(pos) = DUMP_ELEM;
 
     ListDump(list);
 
     DUMP_DATA = POISON;
     DUMP_POS = -1;
 
-    return LIST_OK;
+    return DUMP_ELEM;
 }
 
 
-ListErr_t InsertBefore(long pos, list_t value, list_s* list)
+long InsertBefore(long pos, list_t value, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
@@ -150,85 +79,79 @@ ListErr_t InsertBefore(long pos, list_t value, list_s* list)
     DUMP_DATA = value;
     DUMP_POS = pos;
 
-    long free = FREE;
+    DUMP_ELEM = FREE;
 
-    DATA(free) = value;
-    FREE = NEXT(free);
+    DATA(DUMP_ELEM) = value;
+    FREE = NEXT(DUMP_ELEM);
 
-    PREV(free) = NEXT(pos);
-    NEXT(free) = pos;
+    PREV(DUMP_ELEM) = NEXT(pos);
+    NEXT(DUMP_ELEM) = pos;
 
-    NEXT(PREV(pos)) = free;
-    PREV(pos) = free;
+    NEXT(PREV(pos)) = DUMP_ELEM;
+    PREV(pos) = DUMP_ELEM;
 
     ListDump(list);
 
     DUMP_DATA = POISON;
     DUMP_POS = -1;
 
-    return LIST_OK;
+    return DUMP_ELEM;
 }
 
 
-ListErr_t DeleteAfter(long pos, list_s* list)
+long DeleteAfter(long pos, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
     DUMP_POS = pos;
+    DUMP_ELEM = NEXT(pos);
 
-    long deleting_elem = NEXT(pos);
-    long next_elem = NEXT(deleting_elem);
-    long last_free = PREV(FREE);
+    NEXT(pos) = NEXT(DUMP_ELEM);
+    PREV(NEXT(DUMP_ELEM)) = pos;
 
-    PREV(FREE) = deleting_elem;
+    NEXT(DUMP_ELEM) = FREE;
+    PREV(DUMP_ELEM) = PREV(FREE);
 
-    NEXT(pos) = next_elem;
-    PREV(next_elem) = pos;
+    PREV(FREE) = DUMP_ELEM;
 
-    NEXT(deleting_elem) = FREE;
-    PREV(deleting_elem) = last_free;
-
-    FREE = deleting_elem;
-    DATA(deleting_elem) = POISON;
-// prev(next , pos);  DSL   Domen Specific Language  #define -> caps
+    FREE = DUMP_ELEM;
+    DATA(DUMP_ELEM) = POISON;
 
     ListDump(list);
 
     DUMP_POS = -1;
-    return LIST_OK;
+    return DUMP_ELEM;
 }
 
 
-ListErr_t DeleteBefore(long pos, list_s* list)
+long DeleteBefore(long pos, list_s* list)
 {
     assert(list != 0);
     assert(pos <= MAX_INDEX);
 
 
     DUMP_POS = pos;
+    DUMP_ELEM = PREV(pos);
 
-    long deleting_elem = PREV(pos);
-    long prev_elem = PREV(deleting_elem);
-    long last_free = PREV(FREE);
+    NEXT(DUMP_ELEM) = FREE;
 
-    PREV(FREE) = deleting_elem;
+    PREV(pos) = PREV(DUMP_ELEM);
+    NEXT(PREV(DUMP_ELEM)) = pos;
 
-    PREV(pos) = prev_elem;
-    NEXT(prev_elem) = pos;
+    PREV(DUMP_ELEM) = PREV(FREE);
+    PREV(FREE) = DUMP_ELEM;
 
-    NEXT(deleting_elem) = FREE;
-    PREV(deleting_elem) = last_free;
+    FREE = DUMP_ELEM;
+    DATA(DUMP_ELEM) = POISON;
 
-    FREE = deleting_elem;
-    DATA(deleting_elem) = POISON;
 
     ListDump(list);
 
 
     DUMP_POS = -1;
 
-    return LIST_OK;
+    return DUMP_ELEM;
 }
 
 ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)

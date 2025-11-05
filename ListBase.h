@@ -24,6 +24,7 @@ typedef struct
     int count_img;
     list_t dump_data;
     long dump_pos;
+    long dump_free;
 } dot_file_s;
 
 
@@ -52,3 +53,4 @@ typedef enum
 #define COUNT_IMG list->file.count_img
 #define DUMP_DATA list->file.dump_data
 #define DUMP_POS list->file.dump_pos
+#define DUMP_ELEM list->file.dump_free
