@@ -20,14 +20,20 @@ typedef int list_t;
 
 typedef struct
 {
-    long free;
-    list_t* data;
-    long* next;
-    long* prev;
     FILE* dump_file;
     int count_img;
     list_t dump_data;
     long dump_pos;
+} dot_file_s;
+
+
+typedef struct
+{
+    long free;
+    list_t* data;
+    long* next;
+    long* prev;
+    dot_file_s file;
 } list_s;
 
 typedef enum
@@ -42,7 +48,7 @@ typedef enum
 #define NEXT(index) list->next[index]
 #define PREV(index) list->prev[index]
 #define FREE list->free
-#define DUMP_FILE list->dump_file
-#define COUNT_IMG list->count_img
-#define DUMP_DATA list->dump_data
-#define DUMP_POS list->dump_pos
+#define DUMP_FILE list->file.dump_file
+#define COUNT_IMG list->file.count_img
+#define DUMP_DATA list->file.dump_data
+#define DUMP_POS list->file.dump_pos
