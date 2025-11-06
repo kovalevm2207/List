@@ -3,10 +3,11 @@
 #ifndef LIST_DUMP
 #define LIST_DUMP
 
+#include <time.h>
 
-FILE* StartHTMLfile(void);  // to do: перенести
+FILE* StartHTMLfile(void);
 ListErr_t CreateDotFile(list_s* list);
-void MakeNodes(list_s* list, FILE* file);           //
+void MakeNodes(list_s* list, FILE* file);
 void SetOrder(list_s* list, FILE* file);
 void MakeArrows(list_s* list, FILE* file);
 void PrintList(list_s* list);

@@ -5,6 +5,9 @@ FILE* StartHTMLfile(void)
     FILE* dump_file = fopen("dump.html", "w");
     if(dump_file == NULL) return NULL;
 
+    time_t now = time(NULL);
+    struct tm *time_info = localtime(&now);
+
     fprintf(dump_file, "<!DOCTYPE html>\n"
                        "<html>\n"
                        "<head>\n"
@@ -15,7 +18,12 @@ FILE* StartHTMLfile(void)
                        "    * {\n"
                        "       font-size: 20px;\n"
                        "    }\n"
-                       "</style>\n");
+                       "</style>\n"
+                       "<pre> Creation time (hours:min): %02d:%02d\n"
+                            " data (day:month:year): %02d:%02d:%d </pre>",
+                        time_info->tm_hour, time_info->tm_min,
+                        time_info->tm_mday, time_info->tm_mon + 1,
+                        time_info->tm_year + 1900);
     fclose(dump_file);
     return  dump_file;
 }
