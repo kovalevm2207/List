@@ -171,7 +171,7 @@ void MakeArrows(list_s* list, FILE* file)
 }
 
 
-ListErr_t WriteInHtmlFile(list_s* list,  const char* func, const char* file, int line)
+ListErr_t WriteInHtmlFile(list_s* list, ListErr_t* status, const char* func, const char* file, int line)
 {
     assert(list != NULL);
     assert(func != NULL);
@@ -180,16 +180,55 @@ ListErr_t WriteInHtmlFile(list_s* list,  const char* func, const char* file, int
     DUMP_FILE = fopen("dump.html", "a");
     assert(DUMP_FILE != NULL);
 
-    fprintf(DUMP_FILE, "    <pre><b>ListDump(%d) from %s(pos = %ld, value = %d) at %s:%d</b></pre>\n"
-                       "    <pre><b>function return value: %ld",
+    fprintf(DUMP_FILE, "<pre><b>ListDump(%d) from %s(pos = %ld, value = %d) at %s:%d\n"
+                       "function return value: %ld </b></pre>",
                              COUNT_IMG, func, DUMP_POS, DUMP_DATA, file, line, DUMP_ELEM);
-    PrintList(list);
-    fprintf(DUMP_FILE, "    <img src=\"svg_dot/%ddump.svg\">\n",
-                             COUNT_IMG++);
+    PrintStatus((int*) status, DUMP_FILE);
+
+    if (!(*status & NULL_DATA || *status & NULL_NEXT || *status & NULL_PREV))
+    {
+        PrintList(list);
+        fprintf(DUMP_FILE, "    <img src=\"svg_dot/%ddump.svg\">\n",
+                                 COUNT_IMG++);
+    }
 
     fclose(DUMP_FILE);
 
     return LIST_OK;
+}
+
+
+void PrintStatus(int* status, FILE* file)
+{
+    fprintf(file, "<pre><b>");
+    if (*status == LIST_OK)
+    {
+        fprintf(file, "<span style=\"color: #00a606;\"> STATUS: LIST_OK(%d)</span>"
+                  "</b></pre>\n", LIST_OK);
+        return;
+    }
+    else
+    {
+        fprintf(file, "<span style=\"color: #a00000ff;\"> ERROR_______STATUS:");
+        struct
+        {
+            ListErr_t code;
+            const char* message;
+        } errors[] = {
+            {NULL_DATA, "NULL_DATA"},
+            {NULL_NEXT, "NULL_NEXT"},
+            {NULL_PREV, "NULL_PREV"}
+        };
+
+        for (size_t i = 0; i < sizeof(errors)/sizeof(errors[0]); i++)
+        {
+            if (*status & errors[i].code)
+            {
+                fprintf(file, "%s(%d); ", errors[i].message, errors[i].code);
+            }
+        }
+        fprintf(file, "</span></b></pre>\n");
+    }
 }
 
 

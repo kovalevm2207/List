@@ -3,21 +3,22 @@
 
 ListErr_t ListCtor(list_s*  list)
 {
-    int status = LIST_OK;
+    int status_value = LIST_OK;
+    int* status = &status_value;
 
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(NULL_LIST)
                                                                     // (ну вообще может это и не проблема)
-    list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));   // Вот проблема такая: list->data это указатель
-    CHECK_PTR(list->data, DATA)                                     // а list->data[0] это уже конкретное значение
+    DATA_PTR = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));   // Вот проблема такая: list->data это указатель
+    CHECK_PTR(DATA_PTR, DATA)                                     // а list->data[0] это уже конкретное значение
                                                                     // я вот не понимаю, как мне сделать макрос , ну или его обработку
-    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));       // так что бы можно было и то и то подставлять или же мне лучше просто писать
-    CHECK_PTR(list->next, NEXT)                                     // list->data ???
+    NEXT_PTR = (long*) calloc(MAX_INDEX + 1, sizeof(long));       // так что бы можно было и то и то подставлять или же мне лучше просто писать
+    CHECK_PTR(NEXT_PTR, NEXT)                                     // list->data ???
 
-    list->prev = (long*) calloc(MAX_INDEX + 1, sizeof(long));
-    CHECK_PTR(list->prev, PREV)
+    PREV_PTR = (long*) calloc(MAX_INDEX + 1, sizeof(long));
+    CHECK_PTR(PREV_PTR, PREV)
 
-    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t) status)
+    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t) *status)
 
     DUMP_FILE = StartHTMLfile();
     CHECK_PTR(DUMP_FILE, FILE)
@@ -43,22 +44,23 @@ ListErr_t ListCtor(list_s*  list)
 
     COUNT_IMG = 1;
 
-    ON_DEBUG(ListVerify(list, &status))
-    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t)status)
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t) *status)
     ON_DEBUG(ListDump(list, status))
 
-    return (ListErr_t)status;
+    return (ListErr_t) *status;
 }
 
 
 long InsertAfter_(long pos, list_t value, list_s* list)
 {
-    int status = LIST_OK;
+    int status_value = LIST_OK;
+    int* status = &status_value;
 
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, &status))
+    ON_DEBUG(ListVerify(list, status))
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_DATA = value;
@@ -75,8 +77,8 @@ long InsertAfter_(long pos, list_t value, list_s* list)
     PREV(NEXT(pos)) = DUMP_ELEM;
     NEXT(pos) = DUMP_ELEM;
 
-    ON_DEBUG(ListVerify(list, &status))
-    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t)status)
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     ON_DEBUG(ListDump(list, status))
 
@@ -89,12 +91,13 @@ long InsertAfter_(long pos, list_t value, list_s* list)
 
 long InsertBefore_(long pos, list_t value, list_s* list)
 {
-    int status = LIST_OK;
+    int status_value = LIST_OK;
+    int* status = &status_value;
 
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, &status))
+    ON_DEBUG(ListVerify(list, status))
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_DATA = value;
@@ -111,7 +114,7 @@ long InsertBefore_(long pos, list_t value, list_s* list)
     NEXT(PREV(pos)) = DUMP_ELEM;
     PREV(pos) = DUMP_ELEM;
 
-    ON_DEBUG(ListVerify(list, &status))
+    ON_DEBUG(ListVerify(list, status))
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     ON_DEBUG(ListDump(list, status))
@@ -125,12 +128,13 @@ long InsertBefore_(long pos, list_t value, list_s* list)
 
 long DeleteAfter_(long pos, list_s* list)
 {
-    int status = LIST_OK;
+    int status_value = LIST_OK;
+    int* status = &status_value;
 
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, &status))
+    ON_DEBUG(ListVerify(list, status))
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_POS = pos;
@@ -147,7 +151,7 @@ long DeleteAfter_(long pos, list_s* list)
     FREE = DUMP_ELEM;
     DATA(DUMP_ELEM) = POISON;
 
-    ON_DEBUG(ListVerify(list, &status))
+    ON_DEBUG(ListVerify(list, status))
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     ON_DEBUG(ListDump(list, status))
@@ -159,12 +163,13 @@ long DeleteAfter_(long pos, list_s* list)
 
 long DeleteBefore_(long pos, list_s* list)
 {
-    int status = LIST_OK;
+    int status_value = LIST_OK;
+    int* status = &status_value;
 
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, &status))
+    ON_DEBUG(ListVerify(list, status))
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_POS = pos;
@@ -181,8 +186,8 @@ long DeleteBefore_(long pos, list_s* list)
     FREE = DUMP_ELEM;
     DATA(DUMP_ELEM) = POISON;
 
-    ON_DEBUG(ListVerify(list, &status))
-    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t)status)
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     ON_DEBUG(ListDump(list, status))
 
@@ -194,39 +199,46 @@ long DeleteBefore_(long pos, list_s* list)
 // "#717171"
 // "#9a0000"
 
-ListErr_t ListDump_(list_s* list, int status, const char* func, const char* file, int line)
+ListErr_t ListDump_(list_s* list, int* status, const char* func, const char* file, int line)
 {
     assert(func != NULL);
     assert(file != NULL);
+    assert(status != NULL);
 
-    if (status & NULL_LIST || list == NULL)
+    if (*status & NULL_LIST || list == NULL)
     {
         printf("ListDump from %s at %s:%d\n"
      RED_COLOR "NULL LIST POINTER\n" RESET, func, file, line);
         return NULL_LIST;
     }
 
-    CreateDotFile(list);
-    char command[MAX_FILE_NAME];
-    sprintf(command, "dot -Tsvg svg_dot/dump.dot -o svg_dot/%ddump.svg", COUNT_IMG);
-    system(command);
-    WriteInHtmlFile(list, func, file, line);
+    if (!(*status & NULL_DATA || *status & NULL_NEXT || *status & NULL_PREV))
+    {
+        CreateDotFile(list);
+        char command[MAX_FILE_NAME];
+        sprintf(command, "dot -Tsvg svg_dot/dump.dot -o svg_dot/%ddump.svg", COUNT_IMG);
+        system(command);
+    }
+
+    WriteInHtmlFile(list, (ListErr_t*) status, func, file, line);
+
     return LIST_OK;
 }
 
 
 ListErr_t ListDtor_(list_s* list)
 {
-    int status = LIST_OK;
+    int status_value = LIST_OK;
+    int* status = &status_value;
 
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(NULL_LIST)
 
     EndHTMLfile(list);
 
-    free(list->prev);
-    free(list->next);
-    free(list->data);
+    free(PREV_PTR);
+    free(NEXT_PTR);
+    free(DATA_PTR);
 
     FREE = 0;
     DUMP_DATA = 0;
@@ -241,5 +253,9 @@ ListErr_t ListDtor_(list_s* list)
 
 ListErr_t ListVerify(list_s* list, int* status)
 {
+    CHECK_PTR(NEXT_PTR, NEXT)
+    CHECK_PTR(PREV_PTR, PREV)
+    CHECK_PTR(DATA_PTR, DATA)
+
     return LIST_OK;
 }

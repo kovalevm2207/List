@@ -21,15 +21,37 @@ int main()
 // Распечатка ошибочного списка:
     list.next[6 + 1] = 300 + 1;
     list.prev[7 + 1] = 5  + 1;
-    ListDump(&list, LIST_OK);
+
+    int test_0 = LIST_OK;
+    int* test_0_ptr = &test_0;
+
+    ListDump(&list, test_0_ptr);
 
 // Проверка срабатывания ошибок при использовании списка
     // Нулевые указатели на структуру list
-    ListDump(NULL, LIST_OK);
+
+    ListDump(NULL, test_0_ptr);
     DeleteBefore(9, NULL);
     DeleteAfter(9, NULL);
     InsertAfter(9, 1000, NULL);
     InsertBefore(9, 1000, NULL);
+
+    long* test_1 = list.next;
+    long* test_2 = list.prev;
+    int* test_3 = list.data;
+
+    list.next = NULL;
+    InsertAfter(9, 1000, &list);
+
+    list.prev = NULL;
+    InsertAfter(9, 1000, &list);
+
+    list.data = NULL;
+    InsertAfter(9, 1000, &list);
+
+    list.next = test_1;
+    list.prev = test_2;
+    list.data = test_3;
 
     ListDtor(&list);
     return 0;

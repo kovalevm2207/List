@@ -10,8 +10,9 @@ ListErr_t CreateDotFile(list_s* list);
 void MakeNodes(list_s* list, FILE* file);
 void SetOrder(list_s* list, FILE* file);
 void MakeArrows(list_s* list, FILE* file);
+void PrintStatus(int* status, FILE* file);
 void PrintList(list_s* list);
-ListErr_t WriteInHtmlFile(list_s* list, const char* func, const char* file, int line);
+ListErr_t WriteInHtmlFile(list_s* list, ListErr_t* status, const char* func, const char* file, int line);
 int EndHTMLfile(list_s* list);
 
 #endif // LIST_DUMP

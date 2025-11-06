@@ -46,6 +46,9 @@ typedef enum
 #define DATA(index) list->data[index]
 #define NEXT(index) list->next[index]
 #define PREV(index) list->prev[index]
+#define DATA_PTR list->data
+#define NEXT_PTR list->next
+#define PREV_PTR list->prev
 #define FREE list->free
 #define DUMP_FILE list->file.dump_file
 #define COUNT_IMG list->file.count_img
