@@ -32,7 +32,7 @@ endif
 all: List.o ListTest.o ListDump.o
 	@ g++ $(FLAGS) $(MODE) List.o ListDump.o ListTest.o -o list
 
-List.o: List.cpp ListDump.h List.h ListBase.h
+List.o: List.cpp ListDump.h List.h ListBase.h color_print.h
 	@ g++ $(FLAGS) $(MODE) -c List.cpp -o List.o
 
 ListTest.o: ListTest.cpp List.h

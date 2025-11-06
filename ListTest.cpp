@@ -18,11 +18,18 @@ int main()
     InsertAfter(9, 1000, &list);
     DeleteAfter(9, &list);
 
+// Распечатка ошибочного списка:
     list.next[6 + 1] = 300 + 1;
     list.prev[7 + 1] = 5  + 1;
     ListDump(&list, LIST_OK);
 
+// Проверка срабатывания ошибок при использовании списка
+    // Нулевые указатели на структуру list
+    ListDump(NULL, LIST_OK);
     DeleteBefore(9, NULL);
+    DeleteAfter(9, NULL);
+    InsertAfter(9, 1000, NULL);
+    InsertBefore(9, 1000, NULL);
 
     ListDtor(&list);
     return 0;

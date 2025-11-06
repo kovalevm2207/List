@@ -35,7 +35,6 @@ ListErr_t ListVerify(list_s* list, int* status);
     #define CHECK_PTR(param, name) if (param == NULL)            \
                                     {                            \
                                         status |= NULL_##name;   \
-                                        ListDump(list, status);  \
                                     }
 
 #else

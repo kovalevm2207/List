@@ -196,15 +196,15 @@ long DeleteBefore_(long pos, list_s* list)
 
 ListErr_t ListDump_(list_s* list, int status, const char* func, const char* file, int line)
 {
-    /*if (status & NULL_LIST)
-    {
-        printf("NULL LIST POINTER\n");
-        return NULL_LIST;
-    }*/
-
-    assert(list != NULL);
     assert(func != NULL);
     assert(file != NULL);
+
+    if (status & NULL_LIST || list == NULL)
+    {
+        printf("ListDump from %s at %s:%d\n"
+     RED_COLOR "NULL LIST POINTER\n" RESET, func, file, line);
+        return NULL_LIST;
+    }
 
     CreateDotFile(list);
     char command[MAX_FILE_NAME];

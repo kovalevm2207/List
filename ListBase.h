@@ -5,9 +5,8 @@
 #include <stdlib.h> // for calloc  // for system()
 #include <assert.h>
 
+#include "color_print.h"
 // ЗАВЕСТИ ПОЛЕ ГДЕ БЫЛ СОЗДАН
-// ОТКЛЮЧАТЬ ВЕРИФИКАТОР
-//  ON_DEBUG(ListVerify())
 
 const int MAX_INDEX = 1 << 4;
 const int CANARY = 0xACDC;
