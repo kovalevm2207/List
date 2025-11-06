@@ -7,9 +7,7 @@
 
 // ЗАВЕСТИ ПОЛЕ ГДЕ БЫЛ СОЗДАН
 // ОТКЛЮЧАТЬ ВЕРИФИКАТОР
-// ON_DEBUG(ListVerify())
-
-
+//  ON_DEBUG(ListVerify())
 
 const int MAX_INDEX = 1 << 4;
 const int CANARY = 0xACDC;
@@ -27,7 +25,6 @@ typedef struct
     long dump_free;
 } dot_file_s;
 
-
 typedef struct
 {
     long free;
@@ -40,10 +37,12 @@ typedef struct
 typedef enum
 {
     LIST_OK   = 1 << 0,
-    NULL_LIST = 1 << 1
+    NULL_LIST = 1 << 1,
+    NULL_DATA = 1 << 2,
+    NULL_NEXT = 1 << 3,
+    NULL_PREV = 1 << 4,
+    NULL_FILE = 1 << 5
 } ListErr_t;
-
-#endif // LIST_BASE
 
 #define DATA(index) list->data[index]
 #define NEXT(index) list->next[index]
@@ -54,3 +53,5 @@ typedef enum
 #define DUMP_DATA list->file.dump_data
 #define DUMP_POS list->file.dump_pos
 #define DUMP_ELEM list->file.dump_free
+
+#endif // LIST_BASE

@@ -20,7 +20,9 @@ int main()
 
     list.next[6 + 1] = 300 + 1;
     list.prev[7 + 1] = 5  + 1;
-    ListDump(&list);
+    ListDump(&list, LIST_OK);
+
+    DeleteBefore(9, NULL);
 
     ListDtor(&list);
     return 0;

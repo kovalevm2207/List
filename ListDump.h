@@ -11,6 +11,6 @@ void SetOrder(list_s* list, FILE* file);
 void MakeArrows(list_s* list, FILE* file);
 void PrintList(list_s* list);
 ListErr_t WriteInHtmlFile(list_s* list, const char* func, const char* file, int line);
-int EndHTMLfile(FILE* file);
+int EndHTMLfile(list_s* list);
 
 #endif // LIST_DUMP

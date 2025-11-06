@@ -3,19 +3,25 @@
 
 ListErr_t ListCtor(list_s*  list)
 {
-    assert(list != NULL);
+    int status = LIST_OK;
+
+    CHECK_PTR(list, LIST)
+    CHECK_STATUS_AND_IF_NOK_RETURN(NULL_LIST)
                                                                     // (ну вообще может это и не проблема)
     list->data = (list_t*) calloc(MAX_INDEX + 1, sizeof(list_t));   // Вот проблема такая: list->data это указатель
-    assert(list->data != NULL);                                     // а list->data[0] это уже конкретное значение
+    CHECK_PTR(list->data, DATA)                                     // а list->data[0] это уже конкретное значение
                                                                     // я вот не понимаю, как мне сделать макрос , ну или его обработку
-    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));          // так что бы можно было и то и то подставлять или же мне лучше просто писать
-    assert(list->next != NULL);                                           // list->data ???
+    list->next = (long*) calloc(MAX_INDEX + 1, sizeof(long));       // так что бы можно было и то и то подставлять или же мне лучше просто писать
+    CHECK_PTR(list->next, NEXT)                                     // list->data ???
 
     list->prev = (long*) calloc(MAX_INDEX + 1, sizeof(long));
-    assert(list->prev != NULL);
+    CHECK_PTR(list->prev, PREV)
+
+    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t) status)
 
     DUMP_FILE = StartHTMLfile();
-    assert(DUMP_FILE != NULL);
+    CHECK_PTR(DUMP_FILE, FILE)
+    CHECK_STATUS_AND_IF_NOK_RETURN(NULL_FILE)
 
     DUMP_DATA = POISON;
     DUMP_POS = -1;
@@ -37,16 +43,23 @@ ListErr_t ListCtor(list_s*  list)
 
     COUNT_IMG = 1;
 
-    ListDump(list);
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t)status)
+    ON_DEBUG(ListDump(list, status))
 
-    return LIST_OK;
+    return (ListErr_t)status;
 }
 
 
-long InsertAfter(long pos, list_t value, list_s* list)
+long InsertAfter_(long pos, list_t value, list_s* list)
 {
-    assert(list != 0);
-    assert(pos <= MAX_INDEX);
+    int status = LIST_OK;
+
+    CHECK_PTR(list, LIST)
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
+
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_DATA = value;
     DUMP_POS = pos;
@@ -62,7 +75,10 @@ long InsertAfter(long pos, list_t value, list_s* list)
     PREV(NEXT(pos)) = DUMP_ELEM;
     NEXT(pos) = DUMP_ELEM;
 
-    ListDump(list);
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t)status)
+
+    ON_DEBUG(ListDump(list, status))
 
     DUMP_DATA = POISON;
     DUMP_POS = -1;
@@ -71,10 +87,15 @@ long InsertAfter(long pos, list_t value, list_s* list)
 }
 
 
-long InsertBefore(long pos, list_t value, list_s* list)
+long InsertBefore_(long pos, list_t value, list_s* list)
 {
-    assert(list != 0);
-    assert(pos <= MAX_INDEX);
+    int status = LIST_OK;
+
+    CHECK_PTR(list, LIST)
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
+
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_DATA = value;
     DUMP_POS = pos;
@@ -90,7 +111,10 @@ long InsertBefore(long pos, list_t value, list_s* list)
     NEXT(PREV(pos)) = DUMP_ELEM;
     PREV(pos) = DUMP_ELEM;
 
-    ListDump(list);
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
+
+    ON_DEBUG(ListDump(list, status))
 
     DUMP_DATA = POISON;
     DUMP_POS = -1;
@@ -99,10 +123,15 @@ long InsertBefore(long pos, list_t value, list_s* list)
 }
 
 
-long DeleteAfter(long pos, list_s* list)
+long DeleteAfter_(long pos, list_s* list)
 {
-    assert(list != 0);
-    assert(pos <= MAX_INDEX);
+    int status = LIST_OK;
+
+    CHECK_PTR(list, LIST)
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
+
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_POS = pos;
     DUMP_ELEM = NEXT(pos);
@@ -118,18 +147,25 @@ long DeleteAfter(long pos, list_s* list)
     FREE = DUMP_ELEM;
     DATA(DUMP_ELEM) = POISON;
 
-    ListDump(list);
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
+
+    ON_DEBUG(ListDump(list, status))
 
     DUMP_POS = -1;
     return DUMP_ELEM;
 }
 
 
-long DeleteBefore(long pos, list_s* list)
+long DeleteBefore_(long pos, list_s* list)
 {
-    assert(list != 0);
-    assert(pos <= MAX_INDEX);
+    int status = LIST_OK;
 
+    CHECK_PTR(list, LIST)
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
+
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_POS = pos;
     DUMP_ELEM = PREV(pos);
@@ -145,17 +181,27 @@ long DeleteBefore(long pos, list_s* list)
     FREE = DUMP_ELEM;
     DATA(DUMP_ELEM) = POISON;
 
+    ON_DEBUG(ListVerify(list, &status))
+    CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t)status)
 
-    ListDump(list);
-
+    ON_DEBUG(ListDump(list, status))
 
     DUMP_POS = -1;
 
     return DUMP_ELEM;
 }
 
-ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
+// "#717171"
+// "#9a0000"
+
+ListErr_t ListDump_(list_s* list, int status, const char* func, const char* file, int line)
 {
+    /*if (status & NULL_LIST)
+    {
+        printf("NULL LIST POINTER\n");
+        return NULL_LIST;
+    }*/
+
     assert(list != NULL);
     assert(func != NULL);
     assert(file != NULL);
@@ -169,11 +215,14 @@ ListErr_t ListDump_ (list_s* list, const char* func, const char* file, int line)
 }
 
 
-ListErr_t ListDtor(list_s* list)
+ListErr_t ListDtor_(list_s* list)
 {
-    if (list == NULL) return NULL_LIST;
+    int status = LIST_OK;
 
-    EndHTMLfile(DUMP_FILE);
+    CHECK_PTR(list, LIST)
+    CHECK_STATUS_AND_IF_NOK_RETURN(NULL_LIST)
+
+    EndHTMLfile(list);
 
     free(list->prev);
     free(list->next);
@@ -182,16 +231,15 @@ ListErr_t ListDtor(list_s* list)
     FREE = 0;
     DUMP_DATA = 0;
     DUMP_POS = 0;
+    DUMP_ELEM = 0;
+    DUMP_FILE = NULL;
+    COUNT_IMG = 0;
 
     return LIST_OK;
 }
 
 
-/*
-ListErr_t ListVerify(list_t data, list_s  list)
+ListErr_t ListVerify(list_s* list, int* status)
 {
-    (void) list;
-
     return LIST_OK;
 }
-*/

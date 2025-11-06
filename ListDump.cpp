@@ -16,7 +16,7 @@ FILE* StartHTMLfile(void)
                        "       font-size: 20px;\n"
                        "    }\n"
                        "</style>\n");
-
+    fclose(dump_file);
     return  dump_file;
 }
 
@@ -169,12 +169,17 @@ ListErr_t WriteInHtmlFile(list_s* list,  const char* func, const char* file, int
     assert(func != NULL);
     assert(file != NULL);
 
+    DUMP_FILE = fopen("dump.html", "a");
+    assert(DUMP_FILE != NULL);
+
     fprintf(DUMP_FILE, "    <pre><b>ListDump(%d) from %s(pos = %ld, value = %d) at %s:%d</b></pre>\n"
                        "    <pre><b>function return value: %ld",
                              COUNT_IMG, func, DUMP_POS, DUMP_DATA, file, line, DUMP_ELEM);
     PrintList(list);
     fprintf(DUMP_FILE, "    <img src=\"svg_dot/%ddump.svg\">\n",
                              COUNT_IMG++);
+
+    fclose(DUMP_FILE);
 
     return LIST_OK;
 }
@@ -209,10 +214,11 @@ void PrintList(list_s* list)
 }
 
 
-int EndHTMLfile(FILE* file)
+int EndHTMLfile(list_s* list)
 {
-    fprintf(file, "</body>\n"
+    DUMP_FILE = fopen("dump.html", "a");
+    fprintf(DUMP_FILE, "</body>\n"
                   "</html>\n");
 
-    return fclose(file);
+    return fclose(DUMP_FILE);
 }
