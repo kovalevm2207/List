@@ -40,7 +40,8 @@ typedef enum
     NULL_DATA = 1 << 2,
     NULL_NEXT = 1 << 3,
     NULL_PREV = 1 << 4,
-    NULL_FILE = 1 << 5
+    NULL_FILE = 1 << 5,
+    POISON_DATA = 1 << 6
 } ListErr_t;
 
 #define DATA(index) list->data[index]
@@ -55,5 +56,30 @@ typedef enum
 #define DUMP_DATA list->file.dump_data
 #define DUMP_POS list->file.dump_pos
 #define DUMP_ELEM list->file.dump_free
+
+#ifdef DEBUG
+    #define ON_DEBUG(func) func;
+    #define DEBUG_FILE_PRINT(color, text, ...) DUMP_FILE = fopen("dump.html", "a");                                                      \
+                                   assert(DUMP_FILE != NULL);                                                                \
+                                   fprintf(DUMP_FILE,"<p style=\"color: %s;\"><b>" text "</b></p>", color, ##__VA_ARGS__);   \
+                                   fclose(DUMP_FILE);
+
+    #define CHECK_STATUS_AND_IF_NOK_RETURN(return_value) if (*status != LIST_OK && *status != LIST_OK + POISON_DATA) \
+                                       {                                                                             \
+                                            ListDump(list, status);                                                  \
+                                            return return_value;                                                     \
+                                       }
+
+    #define CHECK_PTR(param, name) if (param == NULL)            \
+                                    {                            \
+                                        *status |= NULL_##name;  \
+                                    }
+
+#else
+    #define ON_DEBUG(func)
+    #define DEBUG_FILE_PRINT(text, ...)
+    #define CHECK_PTR(param, name) (void) status;
+    #define CHECK_STATUS_AND_IF_NOK_RETURN(return_value)
+#endif
 
 #endif // LIST_BASE

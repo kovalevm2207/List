@@ -207,8 +207,12 @@ void PrintStatus(int* status, FILE* file)
                   "</b></pre>\n", LIST_OK);
         return;
     }
-    else
+    else if (*status == POISON_DATA + LIST_OK)
     {
+        fprintf(file, "<span style=\"color: #9f00beff;\"><b> WARNING_________STATUS: POISON_DATA(%d)</b></span>"
+                  "</b></pre>\n", POISON_DATA);
+    }
+    else {
         fprintf(file, "<span style=\"color: #a00000ff;\"> ERROR_______STATUS:");
         struct
         {

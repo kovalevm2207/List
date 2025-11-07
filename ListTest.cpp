@@ -34,7 +34,7 @@ int main()
     DeleteBefore(9, NULL);
     DeleteAfter(9, NULL);
     InsertAfter(9, 1000, NULL);
-    InsertBefore(9, 1000, NULL);
+    InsertBefore(9, POISON, NULL);
 
     long* test_1 = list.next;
     long* test_2 = list.prev;
@@ -52,6 +52,10 @@ int main()
     list.next = test_1;
     list.prev = test_2;
     list.data = test_3;
+
+    // предупреждение на то, что в data пытаются положить значение
+    // равное POISON
+    InsertAfter(9, POISON, &list);
 
     ListDtor(&list);
     return 0;

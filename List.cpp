@@ -24,7 +24,7 @@ ListErr_t ListCtor(list_s*  list)
     CHECK_PTR(DUMP_FILE, FILE)
     CHECK_STATUS_AND_IF_NOK_RETURN(NULL_FILE)
 
-    DUMP_DATA = POISON;
+    DUMP_DATA = 0;
     DUMP_POS = -1;
     DUMP_ELEM = -1;
 
@@ -48,6 +48,8 @@ ListErr_t ListCtor(list_s*  list)
     CHECK_STATUS_AND_IF_NOK_RETURN((ListErr_t) *status)
     ON_DEBUG(ListDump(list, status))
 
+    DUMP_DATA = POISON;
+
     return (ListErr_t) *status;
 }
 
@@ -60,11 +62,11 @@ long InsertAfter_(long pos, list_t value, list_s* list)
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, status))
-    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
-
     DUMP_DATA = value;
     DUMP_POS = pos;
+
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_ELEM = FREE;
 
@@ -97,11 +99,11 @@ long InsertBefore_(long pos, list_t value, list_s* list)
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, status))
-    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
-
     DUMP_DATA = value;
     DUMP_POS = pos;
+
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     DUMP_ELEM = FREE;
 
@@ -134,11 +136,12 @@ long DeleteAfter_(long pos, list_s* list)
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, status))
-    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
-
+    DUMP_DATA = 0;
     DUMP_POS = pos;
     DUMP_ELEM = NEXT(pos);
+
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     NEXT(pos) = NEXT(DUMP_ELEM);
     PREV(NEXT(DUMP_ELEM)) = pos;
@@ -157,6 +160,8 @@ long DeleteAfter_(long pos, list_s* list)
     ON_DEBUG(ListDump(list, status))
 
     DUMP_POS = -1;
+    DUMP_DATA = POISON;
+
     return DUMP_ELEM;
 }
 
@@ -169,11 +174,12 @@ long DeleteBefore_(long pos, list_s* list)
     CHECK_PTR(list, LIST)
     CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
-    ON_DEBUG(ListVerify(list, status))
-    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
-
+    DUMP_DATA = 0;
     DUMP_POS = pos;
     DUMP_ELEM = PREV(pos);
+
+    ON_DEBUG(ListVerify(list, status))
+    CHECK_STATUS_AND_IF_NOK_RETURN(-1)
 
     NEXT(DUMP_ELEM) = FREE;
 
@@ -191,6 +197,7 @@ long DeleteBefore_(long pos, list_s* list)
 
     ON_DEBUG(ListDump(list, status))
 
+    DUMP_DATA = POISON;
     DUMP_POS = -1;
 
     return DUMP_ELEM;
@@ -250,12 +257,19 @@ ListErr_t ListDtor_(list_s* list)
     return LIST_OK;
 }
 
+// У меня определяется свободный это
+// элемент или нет через значение data, но тогда
+// POISON_DATA сбивает мне это , может можно
+// как-то по другому проверять свободный это элемент или
+// нет ?
 
 ListErr_t ListVerify(list_s* list, int* status)
 {
     CHECK_PTR(NEXT_PTR, NEXT)
     CHECK_PTR(PREV_PTR, PREV)
     CHECK_PTR(DATA_PTR, DATA)
+
+    if (DUMP_DATA == POISON) *status |= POISON_DATA;
 
     return LIST_OK;
 }
