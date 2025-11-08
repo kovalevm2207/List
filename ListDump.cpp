@@ -92,8 +92,8 @@ void MakeNodes(list_s* list, FILE* file)
         fprintf(file, "    %s [shape=box, style=\"filled\", fontcolor=\"black\", fontname=\"Arial\", fontsize=12, "
                                 "width=1, height=0.5, "
                                 "fillcolor = \"#f79642ff\","
-                                "label = \"FREE = %ld\"];\n",
-                    Arrows[i].name, Arrows[i].value);
+                                "label = \" %s = %ld\"];\n",
+                    Arrows[i].name, Arrows[i].name, Arrows[i].value);
     }
 
     for(long index = 1; index < MAX_INDEX + 1; index++)
@@ -160,8 +160,8 @@ void MakeArrows(list_s* list, FILE* file)
 
     for (long i = 1; i < MAX_INDEX + 1; i++)
     {
-        const char* next_color = (DATA(i) == POISON) ? "#0f5f13ff" : "#1114ff";
-        const char* prev_color = (DATA(i) == POISON) ? "#87c58aff" : "#7bcfffff";
+        const char* next_color = (DATA(i) == POISON) ? "#0f5f13" : "#1114ff";
+        const char* prev_color = (DATA(i) == POISON) ? "#87c58a" : "#7bcfff";
 
             fprintf(file, "    index_%ld:h -> index_%ld:h [dir=normal, color=\"%s\"];\n"
                           "    index_%ld:p -> index_%ld:n [dir=normal, color=\"%s\"];\n",
@@ -189,8 +189,10 @@ ListErr_t WriteInHtmlFile(list_s* list, ListErr_t* status, const char* func, con
     {
         PrintList(list);
         fprintf(DUMP_FILE, "    <img src=\"svg_dot/%ddump.svg\">\n",
-                                 COUNT_IMG++);
+                                 COUNT_IMG);
     }
+
+    COUNT_IMG++;
 
     fclose(DUMP_FILE);
 
@@ -203,17 +205,18 @@ void PrintStatus(int* status, FILE* file)
     fprintf(file, "<pre><b>");
     if (*status == LIST_OK)
     {
-        fprintf(file, "<span style=\"color: #00a606;\"> STATUS: LIST_OK(%d)</span>"
-                  "</b></pre>\n", LIST_OK);
+        fprintf(file, "<span style=\"color: #00a606;\"> STATUS(%d): LIST_OK(%d)</span>"
+                  "</b></pre>\n", *status,  LIST_OK);
         return;
     }
-    else if (*status == POISON_DATA + LIST_OK)
+    if (*status & POISON_DATA)
     {
-        fprintf(file, "<span style=\"color: #9f00beff;\"><b> WARNING_________STATUS: POISON_DATA(%d)</b></span>"
-                  "</b></pre>\n", POISON_DATA);
+        fprintf(file, "<span style=\"color: #9f00be;\"><b> WARNING_________STATUS(%d): POISON_DATA(%d)</b></span>"
+                  "</b></pre>\n", *status - LIST_OK, POISON_DATA);
     }
-    else {
-        fprintf(file, "<span style=\"color: #a00000ff;\"> ERROR_______STATUS:");
+    if (*status != LIST_OK + POISON_DATA)
+    {
+        fprintf(file, "<span style=\"color: #a00000;\"><b> ERROR_______STATUS(%d):", *status - LIST_OK);
         struct
         {
             ListErr_t code;
@@ -221,17 +224,25 @@ void PrintStatus(int* status, FILE* file)
         } errors[] = {
             {NULL_DATA, "NULL_DATA"},
             {NULL_NEXT, "NULL_NEXT"},
-            {NULL_PREV, "NULL_PREV"}
+            {NULL_PREV, "NULL_PREV"},
+            {NEXT_DATA_ERR, "NEXT_DATA_ERR"},
+            {INVALID_NEXT_INDEX, "INVALID_NEXT_INDEX"},
+            {INVALID_PREV_INDEX, "INVALID_PREV_INDEX"},
+            {NEXT_CYCLE_ERR, "NEXT_CYCLE_ERR"},
+            {PREV_CYCLE_ERR, "PREV_CYCLE_ERR"},
+            {INVALID_FREE_INDEX, "INVALID_FREE_INDEX"},
+            {INVALID_INDEX_IN_FUNC_ARG, "INVALID_INDEX_IN_FUNC_ARG"},
+            {FREE_ELEM_NOT_POISON, "FREE_ELEM_NOT_POISON"}
         };
 
         for (size_t i = 0; i < sizeof(errors)/sizeof(errors[0]); i++)
         {
             if (*status & errors[i].code)
             {
-                fprintf(file, "%s(%d); ", errors[i].message, errors[i].code);
+                fprintf(file, "  %s(%d); ", errors[i].message, errors[i].code);
             }
         }
-        fprintf(file, "</span></b></pre>\n");
+        fprintf(file, "</b></span></b></pre>\n");
     }
 }
 
@@ -246,14 +257,14 @@ void PrintList(list_s* list)
     fprintf(file, "    <pre>___________________________________________\n"
                         "<u>|   index  |   data   |   next  |   prev  |</u>\n");
 
-    fprintf(file, "<span style=\"background-color: #f79642ff;\">"
+    fprintf(file, "<span style=\"background-color: #f79642;\">"
                   "| %8d | %8d | %8ld| %8ld|\n"
                   "</span>",
                   0, DATA(0), NEXT(0), PREV(0));
 
     for (int i = 1; i < MAX_INDEX + 1   ; i++)
     {
-        const char* background_color = (DATA(i) == POISON) ? "palegreen" : "#81e6ffff";
+        const char* background_color = (DATA(i) == POISON) ? "palegreen" : "#81e6ff";
         if(i == MAX_INDEX) fprintf(file, "<u>");
         fprintf(file, "<span style=\"background-color: %s;\">"
                       "| %8d | %8d | %8ld| %8ld|"

@@ -18,17 +18,19 @@ int main()
     InsertAfter(9, 1000, &list);
     DeleteAfter(9, &list);
 
-// Распечатка ошибочного списка:
-    list.next[6 + 1] = 300 + 1;
-    list.prev[7 + 1] = 5  + 1;
+#ifdef DEBUG
+    TEST_PRINT("#717171", "Распечатка ошибочного списка с проверкой на невалидный next индекс:")
+    list.next[6] = 300;
+    list.prev[7] = 5;
 
     int test_0 = LIST_OK;
     int* test_0_ptr = &test_0;
 
-    ListDump(&list, test_0_ptr);
+    TEST_PRINT("#717171", "+ Проверка на правильную последовательность заполненных элементов")
+    InsertAfter(9, 1000, &list);
 
-// Проверка срабатывания ошибок при использовании списка
-    // Нулевые указатели на структуру list
+    TEST_PRINT("#717171", "Проверка срабатывания ошибок при использовании списка")
+    TEST_PRINT("#717171", "Нулевые указатели на структуру list")
 
     ListDump(NULL, test_0_ptr);
     DeleteBefore(9, NULL);
@@ -53,9 +55,19 @@ int main()
     list.prev = test_2;
     list.data = test_3;
 
-    // предупреждение на то, что в data пытаются положить значение
-    // равное POISON
+    TEST_PRINT("#717171", "предупреждение на то, что в data пытаются положить значение равное POISON")
     InsertAfter(9, POISON, &list);
+
+    TEST_PRINT("#717171", "Теперь проверим на обнаружение циклических зависимостей, на примере prev цикла:")
+    list.prev[7] = 9;
+    InsertAfter(9, POISON, &list);
+
+    list.next[5] = 3;
+    InsertAfter(9, POISON, &list);
+
+    list.next[5] = 12;
+    InsertAfter(9, POISON, &list);
+#endif
 
     ListDtor(&list);
     return 0;

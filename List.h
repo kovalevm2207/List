@@ -11,6 +11,11 @@ long DeleteBefore_(long pos, list_s* list);
 ListErr_t ListDump_ (list_s* indexes, int* status, const char* func, const char* file, int line);
 ListErr_t ListDtor_ (list_s* indexes);
 ListErr_t ListVerify(list_s* list, int* status);
+ListErr_t check_prev_and_next(list_s* list);
+
+long get_next(list_s* list, long index);
+long get_prev(list_s* list, long index);
+long get_free(list_s* list, long index);
 
 #define InsertAfter(pos, value, list) InsertAfter_(pos, value, list)
 #define InsertBefore(pos, value, list) InsertBefore_(pos, value, list)
